@@ -1,0 +1,121 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum MatchStatus {
+  SCHEDULED
+  LIVE
+  FINISHED
+  POSTPONED
+}
+
+model User {
+  id           String       @id @default(cuid())
+  name         String
+  email        String       @unique
+  passwordHash String
+  image        String?
+  role         Role         @default(USER)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  predictions  Prediction[]
+  champions    Champion[]
+}
+
+model Match {
+  id          String       @id @default(cuid())
+  externalId  String?      @unique
+  competition String       @default("Copa do Mundo")
+  stage       String?
+  groupName   String?
+  homeTeam    String
+  awayTeam    String
+  homeCrest   String?
+  awayCrest   String?
+  kickoff     DateTime
+  status      MatchStatus  @default(SCHEDULED)
+  homeScore   Int?
+  awayScore   Int?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  predictions Prediction[]
+
+  @@index([kickoff])
+  @@index([status])
+}
+
+model Prediction {
+  id        String   @id @default(cuid())
+  userId    String
+  matchId   String
+  homeScore Int
+  awayScore Int
+  points    Int?
+  scored    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  match Match @relation(fields: [matchId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, matchId])
+  @@index([matchId])
+  @@index([userId])
+}
+
+model Settings {
+  id              String    @id @default("singleton")
+  poolName        String    @default("Bolão da Copa - Geração Eucarística")
+  parishName      String    @default("Grupo Jovem Geração Eucarística")
+  pointsExact     Int       @default(5)
+  pointsResult    Int       @default(3)
+  pointsGoalDiff  Int       @default(1)
+  predictionsOpen Boolean   @default(true)
+  // Minutos antes do inicio em que os palpites fecham (padrao: 30)
+  predictionLockMinutes Int @default(30)
+  // Bolao so considera jogos com inicio a partir desta data/hora (null = todos)
+  poolStartsAt    DateTime?
+  updatedAt       DateTime  @updatedAt
+}
+
+model Standing {
+  id             String   @id @default(cuid())
+  competition    String   @default("Copa do Mundo")
+  groupName      String?
+  teamName       String
+  crest          String?
+  position       Int
+  playedGames    Int      @default(0)
+  won            Int      @default(0)
+  draw           Int      @default(0)
+  lost           Int      @default(0)
+  points         Int      @default(0)
+  goalsFor       Int      @default(0)
+  goalsAgainst   Int      @default(0)
+  goalDifference Int      @default(0)
+  updatedAt      DateTime @updatedAt
+
+  @@unique([competition, groupName, teamName])
+}
+
+model Champion {
+  id        String   @id @default(cuid())
+  userId    String
+  season    String
+  position  Int      @default(1)
+  points    Int
+  awardedAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}

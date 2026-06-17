@@ -1,0 +1,86 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #f6f8fc;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--background);
+  color: #0f172a;
+  -webkit-font-smoothing: antialiased;
+}
+
+@layer components {
+  .card {
+    @apply rounded-2xl bg-white shadow-sm ring-1 ring-black/5;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-xl px-4 py-2.5 text-sm font-semibold transition focus:outline-none focus:ring-2 focus:ring-brand-400 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+  }
+
+  .btn-primary {
+    @apply btn bg-brand-600 text-white hover:bg-brand-700;
+  }
+
+  .btn-accent {
+    @apply btn bg-accent-500 text-brand-950 hover:bg-accent-400;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-slate-600 hover:bg-slate-100;
+  }
+
+  .btn-outline {
+    @apply btn border border-slate-300 bg-white text-slate-700 hover:bg-slate-50;
+  }
+
+  .input {
+    @apply w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-200;
+  }
+
+  .label {
+    @apply mb-1.5 block text-sm font-medium text-slate-700;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+
+  .container-app {
+    @apply mx-auto w-full max-w-6xl px-4 sm:px-6 lg:px-8;
+  }
+}
+
+.gradient-hero {
+  background:
+    radial-gradient(1200px 500px at 10% -10%, rgba(255, 175, 31, 0.25), transparent 60%),
+    radial-gradient(1000px 500px at 100% 0%, rgba(51, 133, 252, 0.35), transparent 55%),
+    linear-gradient(135deg, #142657 0%, #1842b4 55%, #1d66f1 100%);
+}
+
+.hero-photo {
+  background-image: url("/galera.jpeg");
+  background-size: cover;
+  background-position: center 35%;
+}
+
+.hero-photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    radial-gradient(900px 400px at 15% 0%, rgba(255, 175, 31, 0.12), transparent 55%),
+    linear-gradient(
+      135deg,
+      rgba(20, 38, 87, 0.88) 0%,
+      rgba(24, 66, 180, 0.82) 45%,
+      rgba(29, 102, 241, 0.75) 100%
+    );
+}
