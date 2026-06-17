@@ -14,9 +14,8 @@ export async function register() {
   g.__bolaoSyncStarted = true;
 
   const provider = (process.env.FOOTBALL_PROVIDER ?? "mock").toLowerCase();
-  // Em modo mock os dados sao fixos; so faz sentido sincronizar com a API real.
-  if (provider !== "football-data") {
-    console.log("[auto-sync] desativado (FOOTBALL_PROVIDER != football-data).");
+  if (provider === "mock") {
+    console.log("[auto-sync] desativado (FOOTBALL_PROVIDER = mock).");
     return;
   }
 
@@ -26,7 +25,7 @@ export async function register() {
     return;
   }
 
-  const intervalMs = Number(process.env.SYNC_INTERVAL_MS ?? 180000); // 3 min
+  const intervalMs = Number(process.env.SYNC_INTERVAL_MS ?? 3 * 60 * 1000);
 
   const run = async () => {
     try {

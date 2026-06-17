@@ -19,14 +19,14 @@ async function main() {
     update: {},
   });
 
-  const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@grupojovem.com")
-    .toLowerCase()
-    .trim();
+  const adminEmail = process.env.ADMIN_EMAIL?.toLowerCase().trim();
   const adminPassword = process.env.ADMIN_PASSWORD;
-  if (!adminPassword) {
-    throw new Error("Defina ADMIN_PASSWORD no arquivo .env antes de rodar o seed.");
+  const adminName = process.env.ADMIN_NAME;
+  if (!adminEmail || !adminPassword || !adminName) {
+    throw new Error(
+      "Defina ADMIN_EMAIL, ADMIN_PASSWORD e ADMIN_NAME no .env antes de rodar o seed."
+    );
   }
-  const adminName = process.env.ADMIN_NAME ?? "Coordenação Grupo Jovem";
 
   const passwordHash = await bcrypt.hash(adminPassword, 10);
   await prisma.user.upsert({

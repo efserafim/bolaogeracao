@@ -24,7 +24,7 @@ function mapStatus(status: string): ProviderMatchStatus {
 }
 
 export class FootballDataProvider implements FootballProvider {
-  name = "football-data";
+  name = "api";
   private token: string;
   private competition: string;
 

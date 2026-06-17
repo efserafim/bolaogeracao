@@ -7,7 +7,7 @@ export * from "./types";
 export function getFootballProvider(): FootballProvider {
   const provider = (process.env.FOOTBALL_PROVIDER ?? "mock").toLowerCase();
 
-  if (provider === "football-data") {
+  if (provider !== "mock") {
     const token = process.env.FOOTBALL_DATA_TOKEN;
     if (!token) {
       console.warn(
