@@ -13,13 +13,42 @@ const poppins = Poppins({
   variable: "--font-display",
 });
 
+const siteUrl =
+  process.env.NEXTAUTH_URL ?? "https://bolaogeracao.netlify.app";
+
+const shareTitle = "Bolão da Copa - Geração Eucarística";
+const shareDescription =
+  "Palpite os jogos da Copa com o Grupo Jovem Geração Eucarística! Cadastre-se, dê seus palpites e dispute o ranking com a galera. ⚽";
+
 export const metadata: Metadata = {
-  title: "Bolão da Copa - Geração Eucarística",
-  description:
-    "Bolão da Copa do Mundo do Grupo Jovem Geração Eucarística. União, comunidade e diversão!",
+  metadataBase: new URL(siteUrl),
+  title: shareTitle,
+  description: shareDescription,
   icons: {
     icon: "/logo.png",
     apple: "/logo.png",
+  },
+  openGraph: {
+    title: shareTitle,
+    description: shareDescription,
+    url: "/",
+    siteName: "Grupo Jovem Geração Eucarística",
+    locale: "pt_BR",
+    type: "website",
+    images: [
+      {
+        url: "/logo.png",
+        width: 512,
+        height: 512,
+        alt: "Logo Grupo Jovem Geração Eucarística",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: shareTitle,
+    description: shareDescription,
+    images: ["/logo.png"],
   },
 };
 
