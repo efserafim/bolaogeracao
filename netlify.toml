@@ -1,0 +1,10 @@
+# Bolao da Copa - Geração Eucarística | Netlify
+# Docs: https://docs.netlify.com/build/frameworks/framework-setup-guides/nextjs/overview/
+
+[build]
+  command = "npm run build"
+  publish = ".next"
+
+[build.environment]
+  NODE_VERSION = "20"
+  NODE_OPTIONS = "--max-http-header-size=65536"

@@ -20,6 +20,12 @@ export async function register() {
     return;
   }
 
+  // Na Netlify o processo nao fica vivo; a sincronizacao roda via scheduled function.
+  if (process.env.NETLIFY) {
+    console.log("[auto-sync] desativado na Netlify (usa scheduled function).");
+    return;
+  }
+
   const intervalMs = Number(process.env.SYNC_INTERVAL_MS ?? 180000); // 3 min
 
   const run = async () => {

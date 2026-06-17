@@ -12,10 +12,11 @@ const schema = z.object({
   pointsResult: z.number().int().min(0).max(100).optional(),
   pointsGoalDiff: z.number().int().min(0).max(100).optional(),
   predictionsOpen: z.boolean().optional(),
-  // ISO string ou null para limpar
   poolStartsAt: z.string().nullable().optional(),
   predictionLockMinutes: z.number().int().min(0).max(180).optional(),
 });
+
+export async function PUT(req: Request) {
   const admin = await requireAdmin();
   if (!admin) {
     return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
@@ -44,7 +45,6 @@ const schema = z.object({
 
   clearSettingsCache();
 
-  // Recalcula se mudaram as regras ou o periodo do bolao
   if (
     parsed.data.pointsExact !== undefined ||
     parsed.data.pointsResult !== undefined ||
