@@ -2,7 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHeader, StatusBadge } from "@/components/PageHeader";
 import { TeamFlag } from "@/components/TeamFlag";
-import { formatKickoff } from "@/lib/format";
+import { dayKey, formatDay, formatMatchMeta, formatTime } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth";
 import { getPoolMatchFilter } from "@/lib/settings";
 import { AutoRefresh } from "@/components/AutoRefresh";
@@ -21,6 +21,19 @@ export default async function JogosPage() {
     ? await prisma.prediction.findMany({ where: { userId: user.id } })
     : [];
   const predByMatch = new Map(myPredictions.map((p) => [p.matchId, p]));
+
+  const byDay = new Map<string, typeof matches>();
+  for (const m of matches) {
+    const key = dayKey(m.kickoff);
+    const list = byDay.get(key) ?? [];
+    list.push(m);
+    byDay.set(key, list);
+  }
+  const days = Array.from(byDay.entries()).map(([key, dayMatches]) => ({
+    key,
+    label: formatDay(dayMatches[0].kickoff),
+    matches: dayMatches,
+  }));
 
   return (
     <div>
@@ -41,66 +54,84 @@ export default async function JogosPage() {
             jogos no painel administrativo.
           </div>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2">
-            {matches.map((m) => {
-              const started =
-                new Date(m.kickoff).getTime() <= Date.now() ||
-                m.status !== "SCHEDULED";
-              const pred = predByMatch.get(m.id);
-              return (
-                <div key={m.id} className="card p-5">
-                  <div className="flex items-center justify-between text-xs text-slate-400">
-                    <span>
-                      {m.groupName ? `${m.groupName} · ` : ""}
-                      {m.stage ?? m.competition}
-                    </span>
-                    <StatusBadge status={m.status} />
-                  </div>
-
-                  <div className="mt-4 flex items-center gap-3">
-                    <TeamFlag name={m.homeTeam} crest={m.homeCrest} />
-                    <div className="flex min-w-[64px] items-center justify-center">
-                      {m.status === "FINISHED" || m.status === "LIVE" ? (
-                        <span className="font-display text-xl font-extrabold text-slate-900">
-                          {m.homeScore ?? 0} <span className="text-slate-300">×</span>{" "}
-                          {m.awayScore ?? 0}
-                        </span>
-                      ) : (
-                        <span className="text-slate-300">×</span>
-                      )}
-                    </div>
-                    <TeamFlag name={m.awayTeam} crest={m.awayCrest} align="right" />
-                  </div>
-
-                  <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
-                    <span className="text-slate-500">
-                      {formatKickoff(m.kickoff)}
-                    </span>
-                    {pred ? (
-                      <span className="badge bg-brand-50 text-brand-700">
-                        Seu palpite: {pred.homeScore}×{pred.awayScore}
-                        {pred.scored && pred.points !== null && (
-                          <span className="ml-1 font-bold">
-                            (+{pred.points})
+          <div className="space-y-10">
+            {days.map((day) => (
+              <section key={day.key}>
+                <h2 className="mb-4 flex items-center gap-3 font-display text-xl font-bold text-brand-900">
+                  <span className="h-2 w-2 rounded-full bg-accent-500" />
+                  {day.label}
+                  <span className="text-sm font-normal text-slate-400">
+                    ({day.matches.length}{" "}
+                    {day.matches.length === 1 ? "jogo" : "jogos"})
+                  </span>
+                </h2>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {day.matches.map((m) => {
+                    const started =
+                      new Date(m.kickoff).getTime() <= Date.now() ||
+                      m.status !== "SCHEDULED";
+                    const pred = predByMatch.get(m.id);
+                    return (
+                      <div key={m.id} className="card p-5">
+                        <div className="flex items-center justify-between text-xs text-slate-400">
+                          <span>
+                            {formatMatchMeta(m.stage, m.groupName, m.competition)}
                           </span>
-                        )}
-                      </span>
-                    ) : started ? (
-                      <span className="text-xs text-slate-400">
-                        Palpites encerrados
-                      </span>
-                    ) : (
-                      <Link
-                        href="/palpites"
-                        className="text-xs font-semibold text-brand-600 hover:text-brand-700"
-                      >
-                        Palpitar →
-                      </Link>
-                    )}
-                  </div>
+                          <StatusBadge status={m.status} />
+                        </div>
+
+                        <div className="mt-4 flex items-center gap-3">
+                          <TeamFlag name={m.homeTeam} crest={m.homeCrest} />
+                          <div className="flex min-w-[64px] items-center justify-center">
+                            {m.status === "FINISHED" || m.status === "LIVE" ? (
+                              <span className="font-display text-xl font-extrabold text-slate-900">
+                                {m.homeScore ?? 0}{" "}
+                                <span className="text-slate-300">×</span>{" "}
+                                {m.awayScore ?? 0}
+                              </span>
+                            ) : (
+                              <span className="text-slate-300">×</span>
+                            )}
+                          </div>
+                          <TeamFlag
+                            name={m.awayTeam}
+                            crest={m.awayCrest}
+                            align="right"
+                          />
+                        </div>
+
+                        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
+                          <span className="font-medium text-slate-600">
+                            {formatTime(m.kickoff)}
+                          </span>
+                          {pred ? (
+                            <span className="badge bg-brand-50 text-brand-700">
+                              Seu palpite: {pred.homeScore}×{pred.awayScore}
+                              {pred.scored && pred.points !== null && (
+                                <span className="ml-1 font-bold">
+                                  (+{pred.points})
+                                </span>
+                              )}
+                            </span>
+                          ) : started ? (
+                            <span className="text-xs text-slate-400">
+                              Palpites encerrados
+                            </span>
+                          ) : (
+                            <Link
+                              href="/palpites"
+                              className="text-xs font-semibold text-brand-600 hover:text-brand-700"
+                            >
+                              Palpitar →
+                            </Link>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              );
-            })}
+              </section>
+            ))}
           </div>
         )}
       </div>

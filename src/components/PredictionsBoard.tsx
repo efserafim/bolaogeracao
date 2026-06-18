@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { TeamFlag } from "./TeamFlag";
-import { formatKickoff } from "@/lib/format";
+import { dayKey, formatDay, formatMatchMeta, formatTime } from "@/lib/format";
 
 export interface BoardMatch {
   id: string;
@@ -111,15 +111,12 @@ function MatchRow({
       className={`card p-5 ${locked ? "opacity-90 ring-1 ring-slate-200" : ""}`}
     >
       <div className="flex items-center justify-between text-xs text-slate-400">
-        <span>
-          {match.groupName ? `${match.groupName} · ` : ""}
-          {match.stage}
-        </span>
+        <span>{formatMatchMeta(match.stage, match.groupName)}</span>
         <div className="flex items-center gap-2">
           {locked && (
             <span className="badge bg-slate-200 text-slate-600">Encerrado</span>
           )}
-          <span>{formatKickoff(match.kickoff)}</span>
+            <span>{formatTime(match.kickoff)}</span>
         </div>
       </div>
 
@@ -175,6 +172,48 @@ function MatchRow({
   );
 }
 
+function groupByDay(list: BoardMatch[]) {
+  const map = new Map<string, BoardMatch[]>();
+  for (const m of list) {
+    const key = dayKey(m.kickoff);
+    const group = map.get(key) ?? [];
+    group.push(m);
+    map.set(key, group);
+  }
+  return Array.from(map.entries()).map(([key, dayMatches]) => ({
+    key,
+    label: formatDay(dayMatches[0].kickoff),
+    matches: dayMatches,
+  }));
+}
+
+function DaySection({
+  label,
+  matches,
+  predictionsOpen,
+}: {
+  label: string;
+  matches: BoardMatch[];
+  predictionsOpen: boolean;
+}) {
+  return (
+    <section>
+      <h3 className="mb-4 flex items-center gap-3 font-display text-lg font-bold text-brand-900">
+        <span className="h-2 w-2 rounded-full bg-accent-500" />
+        {label}
+        <span className="text-sm font-normal text-slate-400">
+          ({matches.length} {matches.length === 1 ? "jogo" : "jogos"})
+        </span>
+      </h3>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {matches.map((m) => (
+          <MatchRow key={m.id} match={m} predictionsOpen={predictionsOpen} />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 export function PredictionsBoard({
   matches,
   predictionsOpen = true,
@@ -192,31 +231,31 @@ export function PredictionsBoard({
 
   const open = matches.filter((m) => !m.locked);
   const closed = matches.filter((m) => m.locked);
+  const openDays = groupByDay(open);
+  const closedDays = groupByDay(closed);
 
   return (
-    <div className="space-y-8">
-      {open.length > 0 && (
-        <div className="grid gap-4 sm:grid-cols-2">
-          {open.map((m) => (
-            <MatchRow
-              key={m.id}
-              match={m}
-              predictionsOpen={predictionsOpen}
-            />
-          ))}
-        </div>
-      )}
+    <div className="space-y-10">
+      {openDays.map((day) => (
+        <DaySection
+          key={day.key}
+          label={day.label}
+          matches={day.matches}
+          predictionsOpen={predictionsOpen}
+        />
+      ))}
 
-      {closed.length > 0 && (
+      {closedDays.length > 0 && (
         <div>
-          <h2 className="mb-4 font-display text-lg font-bold text-slate-700">
+          <h2 className="mb-6 font-display text-lg font-bold text-slate-700">
             Jogos encerrados
           </h2>
-          <div className="grid gap-4 sm:grid-cols-2">
-            {closed.map((m) => (
-              <MatchRow
-                key={m.id}
-                match={m}
+          <div className="space-y-10">
+            {closedDays.map((day) => (
+              <DaySection
+                key={day.key}
+                label={day.label}
+                matches={day.matches}
                 predictionsOpen={predictionsOpen}
               />
             ))}
