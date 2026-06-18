@@ -22,6 +22,14 @@ export async function POST(req: Request) {
     }
 
     const { name, email, password, image } = parsed.data;
+
+    if (image && image.length > 120_000) {
+      return NextResponse.json(
+        { error: "A foto é muito grande. Escolha uma imagem menor." },
+        { status: 400 }
+      );
+    }
+
     const normalizedEmail = email.toLowerCase().trim();
 
     const existing = await prisma.user.findUnique({

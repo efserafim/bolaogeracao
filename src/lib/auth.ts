@@ -1,3 +1,4 @@
+import { NextResponse } from "next/server";
 import type { NextAuthOptions } from "next-auth";
 import { getServerSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -21,6 +22,13 @@ export const authOptions: NextAuthOptions = {
 
         const user = await prisma.user.findUnique({
           where: { email: credentials.email.toLowerCase().trim() },
+          select: {
+            id: true,
+            name: true,
+            email: true,
+            role: true,
+            passwordHash: true,
+          },
         });
         if (!user) return null;
 
@@ -34,7 +42,6 @@ export const authOptions: NextAuthOptions = {
           id: user.id,
           name: user.name,
           email: user.email,
-          image: user.image,
           role: user.role,
         } as any;
       },
@@ -45,8 +52,7 @@ export const authOptions: NextAuthOptions = {
       if (user) {
         token.id = (user as any).id;
         token.role = (user as any).role;
-        // IMPORTANTE: nao guardamos a foto (base64) no token/cookie.
-        // Cookies grandes causam HTTP 431. A foto fica so no banco.
+        token.name = (user as any).name;
       }
       if (trigger === "update" && session?.name) {
         token.name = session.name;
@@ -57,15 +63,11 @@ export const authOptions: NextAuthOptions = {
       if (session.user && token.id) {
         (session.user as any).id = token.id as string;
         (session.user as any).role = token.role as string;
-        // Foto e nome vem do banco, nao do cookie.
-        const dbUser = await prisma.user.findUnique({
-          where: { id: token.id as string },
-          select: { name: true, image: true },
-        });
-        if (dbUser) {
-          session.user.name = dbUser.name;
-          session.user.image = dbUser.image ?? null;
+        if (token.name) {
+          session.user.name = token.name as string;
         }
+        // Foto NAO vai na sessao — evita cookie/resposta gigante e consulta ao banco.
+        session.user.image = null;
       }
       return session;
     },
@@ -81,7 +83,17 @@ export async function getCurrentUser() {
   if (!session?.user) return null;
   const id = (session.user as any).id as string;
   if (!id) return null;
-  return prisma.user.findUnique({ where: { id } });
+  return prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      image: true,
+      createdAt: true,
+    },
+  });
 }
 
 export async function requireAdmin() {

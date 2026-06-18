@@ -3,7 +3,6 @@ import { prisma } from "./prisma";
 export interface RankingRow {
   userId: string;
   name: string;
-  image: string | null;
   totalPoints: number;
   predictions: number;
   scored: number;
@@ -18,7 +17,6 @@ export async function getRanking(): Promise<RankingRow[]> {
       select: {
         id: true,
         name: true,
-        image: true,
         predictions: { select: { points: true, scored: true } },
       },
     }),
@@ -39,7 +37,6 @@ export async function getRanking(): Promise<RankingRow[]> {
     return {
       userId: u.id,
       name: u.name,
-      image: u.image,
       totalPoints,
       predictions: u.predictions.length,
       scored,

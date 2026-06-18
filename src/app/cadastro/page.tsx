@@ -33,11 +33,21 @@ export default function CadastroPage() {
       return;
     }
 
-    await signIn("credentials", {
+    const signInRes = await signIn("credentials", {
       email,
       password,
       redirect: false,
     });
+    setLoading(false);
+
+    if (signInRes?.error) {
+      setError(
+        "Conta criada! Faça login com seu e-mail e senha na tela de entrar."
+      );
+      router.push("/login");
+      return;
+    }
+
     router.push("/jogos");
     router.refresh();
   }

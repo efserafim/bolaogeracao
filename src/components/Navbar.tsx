@@ -69,7 +69,7 @@ export function Navbar({ poolName }: { poolName: string }) {
               <Link href="/perfil" className="flex items-center gap-2">
                 <Avatar
                   name={session.user?.name ?? "?"}
-                  image={session.user?.image}
+                  userId={(session.user as any)?.id}
                   size={34}
                 />
                 <span className="max-w-[120px] truncate text-sm font-medium text-white">

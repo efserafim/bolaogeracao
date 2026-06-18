@@ -44,7 +44,7 @@ export default async function RankingPage() {
                     <span className="text-3xl">{medals[r.position]}</span>
                     <Avatar
                       name={r.name}
-                      image={r.image}
+                      userId={r.userId}
                       size={64}
                       className="mt-2"
                     />
@@ -90,7 +90,7 @@ export default async function RankingPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex items-center gap-3">
-                            <Avatar name={r.name} image={r.image} size={34} />
+                            <Avatar name={r.name} userId={r.userId} size={34} />
                             <span className="font-medium text-slate-800">
                               {r.name}
                               {isMe && (

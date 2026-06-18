@@ -8,6 +8,18 @@ const schema = z.object({
   image: z.string().optional().nullable(),
 });
 
+export async function GET() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return NextResponse.json({ error: "Não autenticado." }, { status: 401 });
+  }
+  return NextResponse.json({
+    name: user.name,
+    email: user.email,
+    image: user.image,
+  });
+}
+
 export async function PUT(req: Request) {
   const user = await getCurrentUser();
   if (!user) {

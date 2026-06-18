@@ -106,7 +106,7 @@ export default async function HomePage() {
                   <span className="w-6 text-center font-display font-bold text-slate-400">
                     {r.position}
                   </span>
-                  <Avatar name={r.name} image={r.image} size={36} />
+                  <Avatar name={r.name} userId={r.userId} size={36} />
                   <span className="flex-1 truncate font-medium text-slate-800">
                     {r.name}
                   </span>

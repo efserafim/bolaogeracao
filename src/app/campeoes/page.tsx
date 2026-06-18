@@ -38,7 +38,7 @@ export default async function CampeoesPage() {
                   Líder da edição atual
                 </p>
                 <div className="mt-2 flex items-center gap-3">
-                  <Avatar name={leader.name} image={leader.image} size={56} />
+                  <Avatar name={leader.name} userId={leader.userId} size={56} />
                   <div>
                     <p className="font-display text-xl font-extrabold text-slate-900">
                       {leader.name}
@@ -80,7 +80,7 @@ export default async function CampeoesPage() {
                         </span>
                         <Avatar
                           name={c.user.name}
-                          image={c.user.image}
+                          userId={c.user.id}
                           size={48}
                         />
                         <div>

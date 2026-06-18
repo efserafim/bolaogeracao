@@ -13,16 +13,28 @@ export default function PerfilPage() {
   const [image, setImage] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   useEffect(() => {
     if (status === "unauthenticated") {
       router.push("/login?callbackUrl=/perfil");
+      return;
     }
-    if (session?.user) {
-      setName(session.user.name ?? "");
-      setImage(session.user.image ?? null);
-    }
-  }, [session, status, router]);
+    if (status !== "authenticated") return;
+
+    setLoadingProfile(true);
+    fetch("/api/profile")
+      .then(async (res) => {
+        if (!res.ok) throw new Error("Falha ao carregar perfil");
+        return res.json();
+      })
+      .then((data) => {
+        setName(data.name ?? session?.user?.name ?? "");
+        setImage(data.image ?? null);
+      })
+      .catch(() => setMsg("Não foi possível carregar seu perfil."))
+      .finally(() => setLoadingProfile(false));
+  }, [status, router, session?.user?.name]);
 
   async function save(e: React.FormEvent) {
     e.preventDefault();
@@ -39,12 +51,12 @@ export default function PerfilPage() {
       setMsg(data.error ?? "Erro ao salvar.");
       return;
     }
-    await update({ name, image });
+    await update({ name });
     setMsg("Perfil atualizado com sucesso! ✓");
     router.refresh();
   }
 
-  if (status === "loading") {
+  if (status === "loading" || loadingProfile) {
     return (
       <div className="container-app py-20 text-center text-slate-400">
         Carregando...
@@ -78,7 +90,13 @@ export default function PerfilPage() {
             />
           </div>
           {msg && (
-            <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-600">
+            <p
+              className={`rounded-lg px-3 py-2 text-sm ${
+                msg.includes("sucesso")
+                  ? "bg-emerald-50 text-emerald-600"
+                  : "bg-red-50 text-red-600"
+              }`}
+            >
               {msg}
             </p>
           )}

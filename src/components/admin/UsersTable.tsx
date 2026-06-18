@@ -8,7 +8,6 @@ export interface AdminUserRow {
   id: string;
   name: string;
   email: string;
-  image: string | null;
   role: string;
   predictions: number;
   points: number;
@@ -95,7 +94,7 @@ export function UsersTable({
               <tr>
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    <Avatar name={u.name} image={u.image} size={34} />
+                    <Avatar name={u.name} userId={u.id} size={34} />
                     <div>
                       <p className="font-medium text-slate-800">{u.name}</p>
                       <p className="text-xs text-slate-400">{u.email}</p>

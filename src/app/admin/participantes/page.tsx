@@ -8,7 +8,14 @@ export const dynamic = "force-dynamic";
 export default async function ParticipantesPage() {
   const me = await getCurrentUser();
   const users = await prisma.user.findMany({
-    include: { predictions: true },
+    select: {
+      id: true,
+      name: true,
+      email: true,
+      role: true,
+      createdAt: true,
+      predictions: { select: { points: true } },
+    },
     orderBy: { createdAt: "asc" },
   });
 
@@ -16,7 +23,6 @@ export default async function ParticipantesPage() {
     id: u.id,
     name: u.name,
     email: u.email,
-    image: u.image,
     role: u.role,
     predictions: u.predictions.length,
     points: u.predictions.reduce((s, p) => s + (p.points ?? 0), 0),

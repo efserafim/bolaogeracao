@@ -1,16 +1,37 @@
+"use client";
+
+import { useState } from "react";
 import { initials } from "@/lib/format";
 
 export function Avatar({
   name,
   image,
+  userId,
   size = 40,
   className = "",
 }: {
   name: string;
   image?: string | null;
+  userId?: string;
   size?: number;
   className?: string;
 }) {
+  const [urlFailed, setUrlFailed] = useState(false);
+
+  if (userId && !urlFailed) {
+    return (
+      <img
+        src={`/api/users/${userId}/avatar`}
+        alt={name}
+        width={size}
+        height={size}
+        onError={() => setUrlFailed(true)}
+        className={`rounded-full object-cover ring-2 ring-white ${className}`}
+        style={{ width: size, height: size }}
+      />
+    );
+  }
+
   if (image) {
     return (
       <img
