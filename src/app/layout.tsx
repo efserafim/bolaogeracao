@@ -14,7 +14,9 @@ const poppins = Poppins({
 });
 
 const siteUrl =
-  process.env.NEXTAUTH_URL ?? "https://bolaogeracao.netlify.app";
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  process.env.URL ??
+  "http://localhost:3000";
 
 const shareTitle = "Bolão da Copa - Geração Eucarística";
 const shareDescription =

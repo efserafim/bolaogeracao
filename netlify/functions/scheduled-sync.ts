@@ -8,7 +8,7 @@ export default async () => {
   const base =
     process.env.URL ||
     process.env.DEPLOY_PRIME_URL ||
-    process.env.NEXTAUTH_URL;
+    process.env.NEXT_PUBLIC_SITE_URL;
   const secret = process.env.CRON_SECRET;
 
   if (!base || !secret) {

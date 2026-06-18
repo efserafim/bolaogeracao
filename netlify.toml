@@ -9,4 +9,4 @@
   NODE_VERSION = "20"
   NODE_OPTIONS = "--max-http-header-size=65536"
   # FOOTBALL_PROVIDER bate com URLs/nomes de arquivo no codigo (falso positivo)
-  SECRETS_SCAN_OMIT_KEYS = "FOOTBALL_PROVIDER"
+  SECRETS_SCAN_OMIT_KEYS = "FOOTBALL_PROVIDER,NEXTAUTH_URL"
