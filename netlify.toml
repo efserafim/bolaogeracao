@@ -10,3 +10,10 @@
   NODE_OPTIONS = "--max-http-header-size=65536"
   # FOOTBALL_PROVIDER bate com URLs/nomes de arquivo no codigo (falso positivo)
   SECRETS_SCAN_OMIT_KEYS = "FOOTBALL_PROVIDER,NEXTAUTH_URL"
+
+[functions]
+  node_bundler = "esbuild"
+  included_files = ["node_modules/.prisma/**", "node_modules/@prisma/client/**"]
+
+[functions."*"]
+  timeout = 26

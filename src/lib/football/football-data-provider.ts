@@ -36,7 +36,7 @@ export class FootballDataProvider implements FootballProvider {
   private async request<T>(path: string): Promise<T> {
     const res = await fetch(`${BASE}${path}`, {
       headers: { "X-Auth-Token": this.token },
-      next: { revalidate: 60 },
+      cache: "no-store",
     });
     if (!res.ok) {
       throw new Error(

@@ -11,17 +11,34 @@ export function SyncButton() {
   async function sync() {
     setLoading(true);
     setMsg(null);
-    const res = await fetch("/api/admin/sync", { method: "POST" });
-    const data = await res.json();
-    setLoading(false);
-    if (!res.ok) {
-      setMsg(data.error ?? "Erro ao sincronizar.");
-      return;
+    try {
+      const res = await fetch("/api/admin/sync", { method: "POST" });
+      let data: { error?: string; matchesSynced?: number; standingsSynced?: number; predictionsScored?: number; provider?: string; skipped?: boolean } = {};
+      try {
+        data = await res.json();
+      } catch {
+        setMsg(
+          res.status === 502
+            ? "O servidor demorou demais (limite da Netlify). A sincronização automática a cada 3 min continua ativa — tente de novo em instantes."
+            : "Resposta inválida do servidor. Tente novamente."
+        );
+        return;
+      }
+      if (!res.ok) {
+        setMsg(data.error ?? "Erro ao sincronizar.");
+        return;
+      }
+      if (data.skipped) {
+        setMsg("Sincronização já em andamento. Aguarde alguns segundos.");
+        return;
+      }
+      setMsg(
+        `✓ ${data.matchesSynced} jogos · ${data.standingsSynced} na tabela · ${data.predictionsScored} palpites pontuados (fonte: ${data.provider}).`
+      );
+      router.refresh();
+    } finally {
+      setLoading(false);
     }
-    setMsg(
-      `✓ ${data.matchesSynced} jogos · ${data.standingsSynced} na tabela · ${data.predictionsScored} palpites pontuados (fonte: ${data.provider}).`
-    );
-    router.refresh();
   }
 
   return (

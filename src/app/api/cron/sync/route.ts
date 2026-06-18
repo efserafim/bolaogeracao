@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { syncEverything } from "@/lib/sync";
 
+export const maxDuration = 26;
+export const dynamic = "force-dynamic";
+
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
   const auth = req.headers.get("authorization");

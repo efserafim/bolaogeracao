@@ -2,6 +2,9 @@ import { NextResponse } from "next/server";
 import { requireAdmin } from "@/lib/auth";
 import { syncEverything } from "@/lib/sync";
 
+export const maxDuration = 26;
+export const dynamic = "force-dynamic";
+
 export async function POST() {
   const admin = await requireAdmin();
   if (!admin) {
