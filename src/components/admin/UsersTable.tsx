@@ -82,6 +82,7 @@ export function UsersTable({
         <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
           <tr>
             <th className="px-4 py-3">Participante</th>
+            <th className="px-4 py-3">E-mail</th>
             <th className="px-4 py-3">Palpites</th>
             <th className="px-4 py-3">Pontos</th>
             <th className="px-4 py-3">Papel</th>
@@ -95,11 +96,16 @@ export function UsersTable({
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
                     <Avatar name={u.name} userId={u.id} size={34} />
-                    <div>
-                      <p className="font-medium text-slate-800">{u.name}</p>
-                      <p className="text-xs text-slate-400">{u.email}</p>
-                    </div>
+                    <p className="font-medium text-slate-800">{u.name}</p>
                   </div>
+                </td>
+                <td className="px-4 py-3">
+                  <a
+                    href={`mailto:${u.email}`}
+                    className="text-slate-600 hover:text-brand-600 hover:underline"
+                  >
+                    {u.email}
+                  </a>
                 </td>
                 <td className="px-4 py-3 text-slate-500">{u.predictions}</td>
                 <td className="px-4 py-3 font-semibold text-brand-700">
@@ -156,7 +162,7 @@ export function UsersTable({
               </tr>
               {passwordUserId === u.id && (
                 <tr>
-                  <td colSpan={5} className="bg-slate-50 px-4 py-3">
+                  <td colSpan={6} className="bg-slate-50 px-4 py-3">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-end">
                       <div className="flex-1">
                         <label className="label text-xs">
