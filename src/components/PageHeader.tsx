@@ -14,7 +14,11 @@ export function PageHeader({
           <h1 className="font-display text-2xl font-extrabold text-brand-900 sm:text-3xl">
             {title}
           </h1>
-          {subtitle && <p className="mt-1 text-slate-500">{subtitle}</p>}
+          {subtitle && (
+            <p className="mt-1 max-w-full text-sm text-slate-500 sm:text-base">
+              {subtitle}
+            </p>
+          )}
         </div>
         {children}
       </div>

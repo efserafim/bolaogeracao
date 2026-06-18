@@ -8,12 +8,14 @@
 
 html {
   scroll-behavior: smooth;
+  overflow-x: hidden;
 }
 
 body {
   background: var(--background);
   color: #0f172a;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 @layer components {

@@ -22,15 +22,15 @@ export function Navbar({ poolName }: { poolName: string }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-950/95 backdrop-blur supports-[backdrop-filter]:bg-brand-950/80">
-      <nav className="container-app flex h-16 items-center justify-between">
+      <nav className="container-app flex h-16 items-center justify-between gap-2 overflow-hidden">
         <Link
           href="/"
-          className="flex items-center gap-2.5 rounded-xl py-1 pr-2 outline-none transition focus-visible:ring-2 focus-visible:ring-accent-400"
+          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl py-1 pr-2 outline-none transition focus-visible:ring-2 focus-visible:ring-accent-400"
         >
-          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-accent-500 text-lg font-black text-brand-950 shadow">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-500 text-lg font-black text-brand-950 shadow">
             ⚽
           </span>
-          <span className="font-display text-base font-extrabold tracking-tight text-white sm:text-lg">
+          <span className="truncate font-display text-base font-extrabold tracking-tight text-white sm:text-lg">
             {poolName}
           </span>
         </Link>
@@ -96,7 +96,7 @@ export function Navbar({ poolName }: { poolName: string }) {
         </div>
 
         <button
-          className="rounded-lg p-2 text-white md:hidden"
+          className="shrink-0 rounded-lg p-2 text-white md:hidden"
           onClick={() => setOpen((v) => !v)}
           aria-label="Menu"
         >

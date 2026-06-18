@@ -2,16 +2,18 @@ export function TeamFlag({
   name,
   crest,
   align = "left",
+  className = "",
 }: {
   name: string;
   crest?: string | null;
   align?: "left" | "right";
+  className?: string;
 }) {
   return (
     <div
-      className={`flex flex-1 items-center gap-2.5 ${
+      className={`flex min-w-0 flex-1 items-center gap-2.5 ${
         align === "right" ? "flex-row-reverse text-right" : ""
-      }`}
+      } ${className}`}
     >
       {crest ? (
         <img

@@ -35,7 +35,7 @@ function Stepper({
     );
   }
   return (
-    <div className="flex items-center gap-1.5">
+    <div className="flex shrink-0 items-center gap-1.5">
       <button
         type="button"
         onClick={() => onChange(Math.max(0, value - 1))}
@@ -110,17 +110,43 @@ function MatchRow({
     <div
       className={`card p-5 ${locked ? "opacity-90 ring-1 ring-slate-200" : ""}`}
     >
-      <div className="flex items-center justify-between text-xs text-slate-400">
-        <span>{formatMatchMeta(match.stage, match.groupName)}</span>
-        <div className="flex items-center gap-2">
+      <div className="flex flex-col gap-1 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between">
+        <span className="truncate">{formatMatchMeta(match.stage, match.groupName)}</span>
+        <div className="flex shrink-0 items-center gap-2">
           {locked && (
             <span className="badge bg-slate-200 text-slate-600">Encerrado</span>
           )}
-            <span>{formatTime(match.kickoff)}</span>
+          <span>{formatTime(match.kickoff)}</span>
         </div>
       </div>
 
-      <div className="mt-4 flex items-center gap-3">
+      <div className="mt-4 flex flex-col gap-3 sm:hidden">
+        <div className="flex items-center justify-between gap-3">
+          <TeamFlag name={match.homeTeam} crest={match.homeCrest} />
+          <Stepper
+            value={home}
+            onChange={(v) => {
+              setHome(v);
+              setSaved(false);
+            }}
+            disabled={!canEdit}
+          />
+        </div>
+        <div className="text-center text-sm text-slate-300">×</div>
+        <div className="flex items-center justify-between gap-3">
+          <TeamFlag name={match.awayTeam} crest={match.awayCrest} />
+          <Stepper
+            value={away}
+            onChange={(v) => {
+              setAway(v);
+              setSaved(false);
+            }}
+            disabled={!canEdit}
+          />
+        </div>
+      </div>
+
+      <div className="mt-4 hidden items-center gap-3 sm:flex">
         <TeamFlag name={match.homeTeam} crest={match.homeCrest} />
         <Stepper
           value={home}
@@ -142,7 +168,7 @@ function MatchRow({
         <TeamFlag name={match.awayTeam} crest={match.awayCrest} align="right" />
       </div>
 
-      <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3">
+      <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">
         {locked ? (
           <span className="text-sm text-slate-500">
             {saved
@@ -162,7 +188,7 @@ function MatchRow({
           <button
             onClick={save}
             disabled={saving}
-            className={saved ? "btn-outline" : "btn-primary"}
+            className={`shrink-0 ${saved ? "btn-outline" : "btn-primary"} w-full sm:w-auto`}
           >
             {saving ? "Salvando..." : saved ? "Atualizar" : "Salvar palpite"}
           </button>
