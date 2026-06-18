@@ -40,13 +40,29 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
     });
-    const data = await res.json();
+
+    let data: { error?: string; warning?: string } = {};
+    try {
+      data = await res.json();
+    } catch {
+      setSaving(false);
+      setMsg(
+        res.status >= 500
+          ? "Servidor demorou demais. Tente salvar novamente em instantes."
+          : "Resposta inválida do servidor."
+      );
+      return;
+    }
+
     setSaving(false);
     if (!res.ok) {
       setMsg(data.error ?? "Erro ao salvar.");
       return;
     }
-    setMsg("✓ Configurações salvas. Pontuações recalculadas se as regras mudaram.");
+    setMsg(
+      data.warning ??
+        "✓ Configurações salvas. Pontuações recalculadas se as regras mudaram."
+    );
     router.refresh();
   }
 
@@ -163,7 +179,15 @@ export function SettingsForm({ initial }: { initial: SettingsValues }) {
       </label>
 
       {msg && (
-        <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-600">
+        <p
+          className={`rounded-lg px-3 py-2 text-sm ${
+            msg.startsWith("✓")
+              ? "bg-emerald-50 text-emerald-600"
+              : msg.includes("salvas")
+                ? "bg-amber-50 text-amber-700"
+                : "bg-red-50 text-red-600"
+          }`}
+        >
           {msg}
         </p>
       )}

@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 import { scoreFinishedMatches } from "@/lib/sync";
 import { clearSettingsCache } from "@/lib/settings";
 
+export const dynamic = "force-dynamic";
+
 const schema = z.object({
   poolName: z.string().min(2).max(120).optional(),
   parishName: z.string().min(2).max(120).optional(),
@@ -22,37 +24,53 @@ export async function PUT(req: Request) {
     return NextResponse.json({ error: "Acesso negado." }, { status: 403 });
   }
 
-  const body = await req.json();
-  const parsed = schema.safeParse(body);
-  if (!parsed.success) {
+  try {
+    const body = await req.json();
+    const parsed = schema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: parsed.error.issues[0]?.message ?? "Dados inválidos" },
+        { status: 400 }
+      );
+    }
+
+    const { poolStartsAt, ...rest } = parsed.data;
+    const data: Record<string, unknown> = { ...rest };
+    if (poolStartsAt !== undefined) {
+      data.poolStartsAt = poolStartsAt ? new Date(poolStartsAt) : null;
+    }
+
+    await prisma.settings.upsert({
+      where: { id: "singleton" },
+      create: { id: "singleton", ...data },
+      update: data,
+    });
+
+    clearSettingsCache();
+
+    let warning: string | undefined;
+    const rulesChanged =
+      parsed.data.pointsExact !== undefined ||
+      parsed.data.pointsResult !== undefined ||
+      parsed.data.pointsGoalDiff !== undefined ||
+      poolStartsAt !== undefined;
+
+    if (rulesChanged) {
+      try {
+        await scoreFinishedMatches();
+      } catch (err) {
+        console.error("rescore after settings failed", err);
+        warning =
+          "Configurações salvas. O recálculo de pontos será feito na próxima sincronização.";
+      }
+    }
+
+    return NextResponse.json({ ok: true, warning });
+  } catch (err: any) {
+    console.error("settings PUT error", err);
     return NextResponse.json(
-      { error: parsed.error.issues[0]?.message ?? "Dados inválidos" },
-      { status: 400 }
+      { error: err?.message ?? "Erro ao salvar configurações." },
+      { status: 500 }
     );
   }
-
-  const { poolStartsAt, ...rest } = parsed.data;
-  const data: any = { ...rest };
-  if (poolStartsAt !== undefined) {
-    data.poolStartsAt = poolStartsAt ? new Date(poolStartsAt) : null;
-  }
-
-  const settings = await prisma.settings.upsert({
-    where: { id: "singleton" },
-    create: { id: "singleton", ...data },
-    update: data,
-  });
-
-  clearSettingsCache();
-
-  if (
-    parsed.data.pointsExact !== undefined ||
-    parsed.data.pointsResult !== undefined ||
-    parsed.data.pointsGoalDiff !== undefined ||
-    poolStartsAt !== undefined
-  ) {
-    await scoreFinishedMatches();
-  }
-
-  return NextResponse.json({ ok: true, settings });
 }
