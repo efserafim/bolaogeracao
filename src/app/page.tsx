@@ -28,8 +28,8 @@ export default async function HomePage() {
   return (
     <div>
       <section className="hero-photo relative overflow-hidden">
-        <div className="container-app relative z-10 grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:py-24">
-          <div className="animate-fade-in-up">
+        <div className="container-app relative z-10 grid min-w-0 items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:py-24">
+          <div className="min-w-0 animate-fade-in-up">
             <div className="mb-6 flex items-center gap-4">
               <div className="inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 via-brand-600 to-brand-800 p-3 shadow-[0_18px_55px_-12px_rgba(29,102,241,0.75)] ring-4 ring-white/60">
                 <Image
@@ -80,14 +80,14 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="animate-pop rounded-3xl bg-white/95 p-6 shadow-2xl ring-1 ring-black/5">
-            <div className="flex items-center justify-between">
+          <div className="animate-pop min-w-0 rounded-3xl bg-white/95 p-6 shadow-2xl ring-1 ring-black/5">
+            <div className="flex items-center justify-between gap-2">
               <h2 className="font-display text-lg font-bold text-brand-900">
                 🏆 Líderes do bolão
               </h2>
               <Link
                 href="/ranking"
-                className="text-sm font-semibold text-brand-600 hover:text-brand-700"
+                className="shrink-0 text-sm font-semibold text-brand-600 hover:text-brand-700"
               >
                 Ver tudo
               </Link>
@@ -101,16 +101,16 @@ export default async function HomePage() {
               {ranking.map((r) => (
                 <li
                   key={r.userId}
-                  className="flex items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5"
+                  className="flex min-w-0 items-center gap-3 rounded-xl bg-slate-50 px-3 py-2.5"
                 >
-                  <span className="w-6 text-center font-display font-bold text-slate-400">
+                  <span className="w-6 shrink-0 text-center font-display font-bold text-slate-400">
                     {r.position}
                   </span>
                   <Avatar name={r.name} userId={r.userId} size={36} />
-                  <span className="flex-1 truncate font-medium text-slate-800">
+                  <span className="min-w-0 flex-1 truncate font-medium text-slate-800">
                     {r.name}
                   </span>
-                  <span className="font-display font-bold text-brand-700">
+                  <span className="shrink-0 font-display font-bold text-brand-700">
                     {r.totalPoints}
                     <span className="ml-1 text-xs font-normal text-slate-400">
                       pts

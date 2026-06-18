@@ -33,7 +33,7 @@ export default async function RankingPage() {
                 {podium.map((r) => (
                   <div
                     key={r.userId}
-                    className={`card flex flex-col items-center p-6 text-center ${
+                    className={`card flex w-full min-w-0 flex-col items-center p-6 text-center ${
                       r.position === 1
                         ? "ring-2 ring-accent-400 sm:order-2 sm:-translate-y-2"
                         : r.position === 2
@@ -48,7 +48,7 @@ export default async function RankingPage() {
                       size={64}
                       className="mt-2"
                     />
-                    <p className="mt-2 truncate font-display font-bold text-slate-900">
+                    <p className="mt-2 max-w-full truncate font-display font-bold text-slate-900">
                       {r.name}
                     </p>
                     <p className="font-display text-2xl font-extrabold text-brand-700">
@@ -66,7 +66,45 @@ export default async function RankingPage() {
               </div>
             )}
 
-            <div className="card overflow-hidden">
+            <div className="space-y-2 sm:hidden">
+              {ranking.map((r) => {
+                const isMe = me?.id === r.userId;
+                return (
+                  <div
+                    key={r.userId}
+                    className={`card min-w-0 p-4 ${isMe ? "ring-2 ring-brand-200" : ""}`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <span className="w-7 shrink-0 text-center font-display text-lg font-bold text-slate-400">
+                        {medals[r.position] ?? r.position}
+                      </span>
+                      <Avatar name={r.name} userId={r.userId} size={40} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-slate-800">
+                          {r.name}
+                          {isMe && (
+                            <span className="ml-1 text-xs font-semibold text-brand-600">
+                              (você)
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {r.scored}/{r.predictions} palpites · {r.exact} exatos
+                        </p>
+                      </div>
+                      <span className="shrink-0 font-display text-lg font-bold text-brand-700">
+                        {r.totalPoints}
+                        <span className="ml-0.5 text-xs font-normal text-slate-400">
+                          pts
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            <div className="card hidden overflow-x-auto sm:block">
               <table className="w-full text-sm">
                 <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
                   <tr>
@@ -89,9 +127,9 @@ export default async function RankingPage() {
                           {medals[r.position] ?? r.position}
                         </td>
                         <td className="px-4 py-3">
-                          <div className="flex items-center gap-3">
+                          <div className="flex min-w-0 items-center gap-3">
                             <Avatar name={r.name} userId={r.userId} size={34} />
-                            <span className="font-medium text-slate-800">
+                            <span className="truncate font-medium text-slate-800">
                               {r.name}
                               {isMe && (
                                 <span className="ml-2 text-xs font-semibold text-brand-600">
