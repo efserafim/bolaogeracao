@@ -1,7 +1,7 @@
 import { Prisma } from "@prisma/client";
 import type { ProviderMatch, ProviderStanding } from "./football/types";
 import { getFootballProvider } from "./football";
-import { prisma } from "./prisma";
+import { prismaSync as prisma } from "./prisma-sync";
 import { calculatePoints } from "./scoring";
 import { getRules, getPoolMatchFilter } from "./settings";
 

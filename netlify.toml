@@ -17,3 +17,6 @@
 
 [functions."*"]
   timeout = 26
+
+[functions."run-sync-background"]
+  timeout = 900

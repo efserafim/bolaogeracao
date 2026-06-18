@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { syncEverything } from "@/lib/sync";
+import { triggerSync } from "@/lib/trigger-sync";
 
-export const maxDuration = 26;
 export const dynamic = "force-dynamic";
 
 export async function GET(req: Request) {
@@ -10,9 +9,13 @@ export async function GET(req: Request) {
   if (secret && auth !== `Bearer ${secret}`) {
     return NextResponse.json({ error: "Não autorizado." }, { status: 401 });
   }
+
   try {
-    const result = await syncEverything();
-    return NextResponse.json({ ok: true, ...result });
+    const outcome = await triggerSync();
+    if (outcome.started) {
+      return NextResponse.json({ ok: true, started: true });
+    }
+    return NextResponse.json({ ok: true, ...outcome.result });
   } catch (err: any) {
     return NextResponse.json(
       { error: err?.message ?? "Erro na sincronização." },

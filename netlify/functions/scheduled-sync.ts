@@ -1,8 +1,7 @@
 import type { Config } from "@netlify/functions";
 
 /**
- * Sincronizacao periodica na Netlify (serverless nao mantem setInterval).
- * Chama o endpoint interno protegido por CRON_SECRET.
+ * Cron a cada 3 min — dispara sync em background (sem passar pela rota Next.js).
  */
 export default async () => {
   const base =
@@ -17,15 +16,16 @@ export default async () => {
   }
 
   try {
-    const res = await fetch(`${base}/api/cron/sync`, {
+    const res = await fetch(`${base}/.netlify/functions/run-sync-background`, {
+      method: "POST",
       headers: { Authorization: `Bearer ${secret}` },
     });
     const body = await res.text();
-    console.log("[scheduled-sync]", res.status, body);
-    return new Response(body, { status: res.ok ? 200 : 500 });
+    console.log("[scheduled-sync] background ->", res.status, body);
+    return new Response(body, { status: res.status === 202 || res.ok ? 200 : 500 });
   } catch (err) {
     console.error("[scheduled-sync] erro:", err);
-    return new Response("Erro na sincronizacao", { status: 500 });
+    return new Response("Erro ao disparar sincronização", { status: 500 });
   }
 };
 
