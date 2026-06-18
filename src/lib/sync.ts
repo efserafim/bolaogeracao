@@ -1,107 +1,146 @@
+import { Prisma } from "@prisma/client";
 import type { ProviderMatch, ProviderStanding } from "./football/types";
 import { getFootballProvider } from "./football";
 import { prisma } from "./prisma";
 import { calculatePoints } from "./scoring";
 import { getRules, getPoolMatchFilter } from "./settings";
 
-// Trava simples para evitar sincronizacoes simultaneas (cron + auto-sync + admin)
-let syncing = false;
+// Trava com expiracao — se a Netlify matar a funcao (502), nao fica presa
+let syncLockUntil = 0;
+const LOCK_MS = 90_000;
 
-async function runInChunks(ops: any[], chunkSize = 100) {
-  if (ops.length === 0) return;
-  for (let i = 0; i < ops.length; i += chunkSize) {
-    await prisma.$transaction(ops.slice(i, i + chunkSize));
+function tryAcquireSync() {
+  if (Date.now() < syncLockUntil) return false;
+  syncLockUntil = Date.now() + LOCK_MS;
+  return true;
+}
+
+function releaseSync() {
+  syncLockUntil = 0;
+}
+
+function newId() {
+  const t = Date.now().toString(36);
+  const r = Math.random().toString(36).slice(2, 10);
+  return `c${t}${r}`.slice(0, 25);
+}
+
+async function bulkUpsertMatches(matches: ProviderMatch[]) {
+  if (matches.length === 0) return 0;
+
+  const CHUNK = 50;
+  for (let i = 0; i < matches.length; i += CHUNK) {
+    const chunk = matches.slice(i, i + CHUNK);
+    const rows = chunk.map(
+      (m) =>
+        Prisma.sql`(
+          ${newId()},
+          ${m.externalId},
+          ${m.competition},
+          ${m.stage},
+          ${m.groupName},
+          ${m.homeTeam},
+          ${m.awayTeam},
+          ${m.homeCrest},
+          ${m.awayCrest},
+          ${new Date(m.kickoff)},
+          ${Prisma.raw(`'${m.status}'::"MatchStatus"`)},
+          ${m.homeScore},
+          ${m.awayScore},
+          NOW(),
+          NOW()
+        )`
+    );
+
+    await prisma.$executeRaw`
+      INSERT INTO "Match" (
+        "id", "externalId", "competition", "stage", "groupName",
+        "homeTeam", "awayTeam", "homeCrest", "awayCrest", "kickoff",
+        "status", "homeScore", "awayScore", "createdAt", "updatedAt"
+      )
+      VALUES ${Prisma.join(rows)}
+      ON CONFLICT ("externalId") DO UPDATE SET
+        "competition" = EXCLUDED."competition",
+        "stage" = EXCLUDED."stage",
+        "groupName" = EXCLUDED."groupName",
+        "homeTeam" = EXCLUDED."homeTeam",
+        "awayTeam" = EXCLUDED."awayTeam",
+        "homeCrest" = EXCLUDED."homeCrest",
+        "awayCrest" = EXCLUDED."awayCrest",
+        "kickoff" = EXCLUDED."kickoff",
+        "status" = EXCLUDED."status",
+        "homeScore" = EXCLUDED."homeScore",
+        "awayScore" = EXCLUDED."awayScore",
+        "updatedAt" = NOW()
+    `;
   }
-}
 
-function buildMatchOps(matches: ProviderMatch[]) {
-  return matches.map((m) =>
-    prisma.match.upsert({
-      where: { externalId: m.externalId },
-      create: {
-        externalId: m.externalId,
-        competition: m.competition,
-        stage: m.stage ?? null,
-        groupName: m.groupName ?? null,
-        homeTeam: m.homeTeam,
-        awayTeam: m.awayTeam,
-        homeCrest: m.homeCrest ?? null,
-        awayCrest: m.awayCrest ?? null,
-        kickoff: new Date(m.kickoff),
-        status: m.status,
-        homeScore: m.homeScore,
-        awayScore: m.awayScore,
-      },
-      update: {
-        stage: m.stage ?? null,
-        groupName: m.groupName ?? null,
-        homeTeam: m.homeTeam,
-        awayTeam: m.awayTeam,
-        homeCrest: m.homeCrest ?? null,
-        awayCrest: m.awayCrest ?? null,
-        kickoff: new Date(m.kickoff),
-        status: m.status,
-        homeScore: m.homeScore,
-        awayScore: m.awayScore,
-      },
-    })
-  );
-}
-
-function buildStandingOps(standings: ProviderStanding[]) {
-  return standings.map((s) =>
-    prisma.standing.upsert({
-      where: {
-        competition_groupName_teamName: {
-          competition: s.competition,
-          groupName: s.groupName ?? "",
-          teamName: s.teamName,
-        },
-      },
-      create: {
-        competition: s.competition,
-        groupName: s.groupName ?? null,
-        teamName: s.teamName,
-        crest: s.crest ?? null,
-        position: s.position,
-        playedGames: s.playedGames,
-        won: s.won,
-        draw: s.draw,
-        lost: s.lost,
-        points: s.points,
-        goalsFor: s.goalsFor,
-        goalsAgainst: s.goalsAgainst,
-        goalDifference: s.goalDifference,
-      },
-      update: {
-        crest: s.crest ?? null,
-        position: s.position,
-        playedGames: s.playedGames,
-        won: s.won,
-        draw: s.draw,
-        lost: s.lost,
-        points: s.points,
-        goalsFor: s.goalsFor,
-        goalsAgainst: s.goalsAgainst,
-        goalDifference: s.goalDifference,
-      },
-    })
-  );
-}
-
-async function persistMatches(matches: ProviderMatch[]) {
-  await runInChunks(buildMatchOps(matches));
   return matches.length;
 }
 
-async function persistStandings(standings: ProviderStanding[]) {
-  await runInChunks(buildStandingOps(standings));
+async function bulkUpsertStandings(standings: ProviderStanding[]) {
+  if (standings.length === 0) return 0;
+
+  const CHUNK = 50;
+  for (let i = 0; i < standings.length; i += CHUNK) {
+    const chunk = standings.slice(i, i + CHUNK);
+    const rows = chunk.map((s) => {
+      const groupKey = s.groupName ?? "";
+      return Prisma.sql`(
+        ${newId()},
+        ${s.competition},
+        ${groupKey},
+        ${s.teamName},
+        ${s.crest},
+        ${s.position},
+        ${s.playedGames},
+        ${s.won},
+        ${s.draw},
+        ${s.lost},
+        ${s.points},
+        ${s.goalsFor},
+        ${s.goalsAgainst},
+        ${s.goalDifference},
+        NOW()
+      )`;
+    });
+
+    await prisma.$executeRaw`
+      INSERT INTO "Standing" (
+        "id", "competition", "groupName", "teamName", "crest",
+        "position", "playedGames", "won", "draw", "lost", "points",
+        "goalsFor", "goalsAgainst", "goalDifference", "updatedAt"
+      )
+      VALUES ${Prisma.join(rows)}
+      ON CONFLICT ("competition", "groupName", "teamName") DO UPDATE SET
+        "crest" = EXCLUDED."crest",
+        "position" = EXCLUDED."position",
+        "playedGames" = EXCLUDED."playedGames",
+        "won" = EXCLUDED."won",
+        "draw" = EXCLUDED."draw",
+        "lost" = EXCLUDED."lost",
+        "points" = EXCLUDED."points",
+        "goalsFor" = EXCLUDED."goalsFor",
+        "goalsAgainst" = EXCLUDED."goalsAgainst",
+        "goalDifference" = EXCLUDED."goalDifference",
+        "updatedAt" = NOW()
+    `;
+  }
+
   return standings.length;
+}
+
+async function persistMatches(matches: ProviderMatch[]) {
+  return bulkUpsertMatches(matches);
+}
+
+async function persistStandings(standings: ProviderStanding[]) {
+  return bulkUpsertStandings(standings);
 }
 
 export async function syncEverything() {
   const provider = getFootballProvider();
-  if (syncing) {
+  if (!tryAcquireSync()) {
     return {
       provider: provider.name,
       skipped: true,
@@ -110,7 +149,6 @@ export async function syncEverything() {
       predictionsScored: 0,
     };
   }
-  syncing = true;
   try {
     const [matches, standings] = await Promise.all([
       provider.getMatches(),
@@ -122,15 +160,15 @@ export async function syncEverything() {
       persistStandings(standings),
     ]);
 
-    const scored = await scoreFinishedMatches();
+    const predictionsScored = await scoreFinishedMatches();
     return {
       provider: provider.name,
       matchesSynced,
       standingsSynced,
-      predictionsScored: scored,
+      predictionsScored,
     };
   } finally {
-    syncing = false;
+    releaseSync();
   }
 }
 
@@ -165,7 +203,9 @@ export async function scoreFinishedMatches() {
     },
   });
 
-  const updates: any[] = [];
+  if (finished.length === 0) return 0;
+
+  const updates = [];
   for (const match of finished) {
     const result = {
       homeScore: match.homeScore as number,
@@ -186,6 +226,21 @@ export async function scoreFinishedMatches() {
     }
   }
 
-  await runInChunks(updates);
+  if (updates.length === 0) return 0;
+
+  await prisma.$transaction(updates);
   return updates.length;
+}
+
+export type SyncStep = "matches" | "standings" | "score";
+
+export async function runSyncStep(step: SyncStep) {
+  const provider = getFootballProvider();
+  if (step === "matches") {
+    return { provider: provider.name, matchesSynced: await syncMatches() };
+  }
+  if (step === "standings") {
+    return { provider: provider.name, standingsSynced: await syncStandings() };
+  }
+  return { provider: provider.name, predictionsScored: await scoreFinishedMatches() };
 }
