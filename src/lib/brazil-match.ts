@@ -1,3 +1,4 @@
+import { dayKey } from "./format";
 import { prisma } from "./prisma";
 import { isBrazilTeam } from "./teams";
 
@@ -12,6 +13,26 @@ function brazilWhere() {
   };
 }
 
+function toMatchInfo(match: {
+  id: string;
+  homeTeam: string;
+  awayTeam: string;
+  homeCrest: string | null;
+  awayCrest: string | null;
+  venue: string | null;
+  kickoff: Date;
+}) {
+  return {
+    id: match.id,
+    homeTeam: match.homeTeam,
+    awayTeam: match.awayTeam,
+    homeCrest: match.homeCrest,
+    awayCrest: match.awayCrest,
+    venue: match.venue,
+    kickoff: match.kickoff.toISOString(),
+  };
+}
+
 export async function getBrazilMatchHighlight() {
   const now = new Date();
 
@@ -20,18 +41,19 @@ export async function getBrazilMatchHighlight() {
     orderBy: { kickoff: "asc" },
   });
   if (live) {
-    return {
-      type: "live" as const,
-      match: {
-        id: live.id,
-        homeTeam: live.homeTeam,
-        awayTeam: live.awayTeam,
-        homeCrest: live.homeCrest,
-        awayCrest: live.awayCrest,
-        venue: live.venue,
-        kickoff: live.kickoff.toISOString(),
-      },
-    };
+    return { type: "live" as const, match: toMatchInfo(live) };
+  }
+
+  const startedToday = await prisma.match.findFirst({
+    where: {
+      ...brazilWhere(),
+      status: { not: "FINISHED" },
+      kickoff: { lte: now },
+    },
+    orderBy: { kickoff: "desc" },
+  });
+  if (startedToday && isBrazilGameToday(startedToday.kickoff)) {
+    return { type: "live" as const, match: toMatchInfo(startedToday) };
   }
 
   const next = await prisma.match.findFirst({
@@ -45,25 +67,17 @@ export async function getBrazilMatchHighlight() {
 
   if (!next) return null;
 
+  // Contagem e comemoracao so no dia do jogo (a partir de 00h em Brasilia).
+  if (!isBrazilGameToday(next.kickoff)) return null;
+
   return {
     type: "upcoming" as const,
-    match: {
-      id: next.id,
-      homeTeam: next.homeTeam,
-      awayTeam: next.awayTeam,
-      homeCrest: next.homeCrest,
-      awayCrest: next.awayCrest,
-      venue: next.venue,
-      kickoff: next.kickoff.toISOString(),
-    },
+    match: toMatchInfo(next),
   };
 }
 
 export function isBrazilGameToday(kickoff: string | Date): boolean {
-  const kick = typeof kickoff === "string" ? new Date(kickoff) : kickoff;
-  const fmt = (d: Date) =>
-    d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
-  return fmt(new Date()) === fmt(kick);
+  return dayKey(new Date()) === dayKey(kickoff);
 }
 
 export function getOpponent(

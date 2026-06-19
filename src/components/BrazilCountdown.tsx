@@ -82,6 +82,20 @@ function CountdownBox({ value, label }: { value: string; label: string }) {
   );
 }
 
+function LiveBadge() {
+  return (
+    <div className="flex items-center gap-2 rounded-xl bg-red-600/90 px-4 py-2 shadow-lg backdrop-blur-sm">
+      <span className="relative flex h-2.5 w-2.5">
+        <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white opacity-75" />
+        <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-white" />
+      </span>
+      <span className="font-display text-sm font-extrabold uppercase tracking-wider text-white sm:text-base">
+        Ao vivo
+      </span>
+    </div>
+  );
+}
+
 export function BrazilCountdown({
   type,
   match,
@@ -92,8 +106,7 @@ export function BrazilCountdown({
   const { opponent, brazilIsHome } = getOpponent(match.homeTeam, match.awayTeam);
   const left = useCountdown(match.kickoff);
   const urgent = !left.done && left.days === 0 && left.hours < 24;
-
-  if (type === "upcoming" && left.done) return null;
+  const isLive = type === "live" || (type === "upcoming" && left.done);
 
   return (
     <section className="relative overflow-hidden border-b border-green-700/30 bg-gradient-to-r from-green-700 via-green-600 to-yellow-500">
@@ -102,7 +115,7 @@ export function BrazilCountdown({
         <div className="min-w-0">
           <p className="flex flex-wrap items-center gap-2 font-display text-sm font-extrabold uppercase tracking-wide text-white sm:text-base">
             <BrazilFlag className="h-5 w-7 sm:h-6 sm:w-8" />
-            {type === "live" ? (
+            {isLive ? (
               <span className="animate-pulse">Brasil em campo agora!</span>
             ) : urgent ? (
               <span>É hoje! Vai ter Brasil na Copa!</span>
@@ -112,7 +125,7 @@ export function BrazilCountdown({
             <span className="text-lg">🎆</span>
           </p>
           <p className="mt-1 text-sm font-medium text-green-50">
-            {type === "live" ? (
+            {isLive ? (
               <>
                 {teamAbbrev(match.homeTeam)} × {teamAbbrev(match.awayTeam)} — ao
                 vivo
@@ -133,7 +146,7 @@ export function BrazilCountdown({
           </p>
         </div>
 
-        {type === "upcoming" && !left.done && (
+        {!isLive && !left.done && (
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
             {left.days > 0 && (
               <CountdownBox value={pad(left.days)} label="dias" />
@@ -150,13 +163,16 @@ export function BrazilCountdown({
           </div>
         )}
 
-        {type === "live" && (
-          <Link
-            href="/jogos"
-            className="shrink-0 rounded-xl bg-yellow-400 px-4 py-2 text-sm font-bold text-green-900 shadow hover:bg-yellow-300"
-          >
-            Ver jogo ao vivo 🔴
-          </Link>
+        {isLive && (
+          <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
+            <LiveBadge />
+            <Link
+              href="/jogos"
+              className="shrink-0 rounded-xl bg-yellow-400 px-4 py-2 text-sm font-bold text-green-900 shadow hover:bg-yellow-300"
+            >
+              Ver jogo
+            </Link>
+          </div>
         )}
       </div>
     </section>
