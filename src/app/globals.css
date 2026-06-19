@@ -60,6 +60,29 @@ body {
   }
 }
 
+@keyframes firework-burst {
+  0% {
+    transform: scale(0) translateY(0);
+    opacity: 1;
+  }
+  70% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: scale(3.5) translateY(-18px);
+    opacity: 0;
+  }
+}
+
+.firework-particle {
+  position: absolute;
+  width: 7px;
+  height: 7px;
+  border-radius: 9999px;
+  animation: firework-burst 1.8s ease-out infinite;
+  box-shadow: 0 0 10px currentColor;
+}
+
 .gradient-hero {
   background:
     radial-gradient(1200px 500px at 10% -10%, rgba(255, 175, 31, 0.25), transparent 60%),

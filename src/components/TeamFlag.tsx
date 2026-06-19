@@ -1,3 +1,5 @@
+import { teamAbbrev } from "@/lib/teams";
+
 export function TeamFlag({
   name,
   crest,
@@ -26,7 +28,12 @@ export function TeamFlag({
           🏳️
         </span>
       )}
-      <span className="truncate font-semibold text-slate-800">{name}</span>
+      <span
+        className="truncate font-display text-sm font-bold tracking-wide text-slate-800 sm:text-base"
+        title={name}
+      >
+        {teamAbbrev(name)}
+      </span>
     </div>
   );
 }

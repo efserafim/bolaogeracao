@@ -5,6 +5,7 @@ import { getRanking } from "@/lib/ranking";
 import { prisma } from "@/lib/prisma";
 import { Avatar } from "@/components/Avatar";
 import { formatKickoff } from "@/lib/format";
+import { teamAbbrev } from "@/lib/teams";
 
 export const dynamic = "force-dynamic";
 
@@ -213,8 +214,9 @@ export default async function HomePage() {
                 className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"
               >
                 <span className="font-medium text-slate-800">
-                  {m.homeTeam} <span className="text-slate-400">x</span>{" "}
-                  {m.awayTeam}
+                  {teamAbbrev(m.homeTeam)}{" "}
+                  <span className="text-slate-400">×</span>{" "}
+                  {teamAbbrev(m.awayTeam)}
                 </span>
                 <span className="text-xs text-slate-500">
                   {formatKickoff(m.kickoff)}
