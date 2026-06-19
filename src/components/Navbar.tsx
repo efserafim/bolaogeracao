@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut, useSession } from "next-auth/react";
@@ -14,81 +15,124 @@ const links = [
   { href: "/campeoes", label: "Campeões" },
 ];
 
-export function Navbar({ poolName }: { poolName: string }) {
+function NavLink({
+  href,
+  label,
+  active,
+  onClick,
+  className = "",
+}: {
+  href: string;
+  label: string;
+  active: boolean;
+  onClick?: () => void;
+  className?: string;
+}) {
+  return (
+    <Link
+      href={href}
+      onClick={onClick}
+      className={`rounded-xl px-3 py-2 text-sm font-semibold transition-all duration-200 lg:px-3.5 ${
+        active
+          ? "bg-white/15 text-white shadow-sm ring-1 ring-white/20"
+          : "text-white/70 hover:bg-white/10 hover:text-white"
+      } ${className}`}
+    >
+      {label}
+    </Link>
+  );
+}
+
+function RumoAoHexaTag() {
+  return (
+    <span className="navbar-hexa-tag" aria-label="Rumo ao Hexa">
+      <span className="navbar-hexa-word navbar-hexa-green">RUMO</span>
+      <span className="navbar-hexa-word navbar-hexa-yellow"> AO </span>
+      <span className="navbar-hexa-word navbar-hexa-blue">HEXA</span>
+    </span>
+  );
+}
+
+export function Navbar({
+  parishName,
+  parishSubtitle = "Paróquia Santo Antônio - Bacaxá",
+}: {
+  parishName: string;
+  parishSubtitle?: string;
+}) {
   const { data: session, status } = useSession();
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const isAdmin = (session?.user as any)?.role === "ADMIN";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-white/10 bg-brand-950/95 backdrop-blur supports-[backdrop-filter]:bg-brand-950/80">
-      <nav className="container-app flex h-16 items-center justify-between gap-2 overflow-hidden">
-        <Link
-          href="/"
-          className="flex min-w-0 flex-1 items-center gap-2.5 rounded-xl py-1 pr-2 outline-none transition focus-visible:ring-2 focus-visible:ring-accent-400"
-        >
-          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-accent-500 text-lg font-black text-brand-950 shadow">
-            ⚽
-          </span>
-          <span className="truncate font-display text-base font-extrabold tracking-tight text-white sm:text-lg">
-            {poolName}
+    <header className="navbar-header sticky top-0 z-40">
+      <nav className="navbar-inner container-app">
+        <Link href="/" className="navbar-brand group">
+          <div className="navbar-logo-badge shrink-0">
+            <Image
+              src="/logo.png"
+              alt={parishName}
+              width={80}
+              height={80}
+              className="navbar-logo-image"
+              priority
+            />
+          </div>
+          <span className="navbar-brand-copy">
+            <span className="navbar-brand-title">{parishName}</span>
+            <span className="navbar-brand-subtitle">{parishSubtitle}</span>
+            <RumoAoHexaTag />
           </span>
         </Link>
 
-        <div className="hidden items-center gap-1 md:flex">
+        <div className="navbar-links hidden md:flex">
           {links.map((l) => (
-            <Link
+            <NavLink
               key={l.href}
               href={l.href}
-              className={`rounded-lg px-3 py-2 text-sm font-medium transition ${
-                pathname === l.href
-                  ? "bg-white/15 text-white"
-                  : "text-white/70 hover:bg-white/10 hover:text-white"
-              }`}
-            >
-              {l.label}
-            </Link>
+              label={l.label}
+              active={pathname === l.href}
+            />
           ))}
           {isAdmin && (
-            <Link
+            <NavLink
               href="/admin"
-              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
-                pathname.startsWith("/admin")
-                  ? "bg-accent-500 text-brand-950"
-                  : "text-accent-400 hover:bg-white/10"
-              }`}
-            >
-              Painel
-            </Link>
+              label="Painel"
+              active={pathname.startsWith("/admin")}
+            />
           )}
         </div>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="navbar-actions hidden md:flex">
           {status === "authenticated" ? (
             <>
-              <Link href="/perfil" className="flex items-center gap-2">
+              <Link href="/perfil" className="navbar-profile">
                 <Avatar
                   name={session.user?.name ?? "?"}
                   userId={(session.user as any)?.id}
                   size={34}
                 />
-                <span className="max-w-[120px] truncate text-sm font-medium text-white">
+                <span className="max-w-[7.5rem] truncate text-sm font-semibold text-white/90 lg:max-w-[9rem]">
                   {session.user?.name}
                 </span>
               </Link>
               <button
                 onClick={() => signOut({ callbackUrl: "/" })}
-                className="text-sm font-medium text-white/60 hover:text-white"
+                className="navbar-ghost-btn"
               >
                 Sair
               </button>
             </>
           ) : (
             <>
-              <Link href="/login" className="text-sm font-medium text-white/80 hover:text-white">
+              <Link href="/login" className="navbar-ghost-btn">
                 Entrar
               </Link>
-              <Link href="/cadastro" className="btn-accent">
+              <Link
+                href="/cadastro"
+                className="btn-accent px-4 shadow-lg shadow-accent-500/20 hover:shadow-accent-500/35"
+              >
                 Participar
               </Link>
             </>
@@ -96,37 +140,44 @@ export function Navbar({ poolName }: { poolName: string }) {
         </div>
 
         <button
-          className="shrink-0 rounded-lg p-2 text-white md:hidden"
+          className="navbar-menu-btn md:hidden"
           onClick={() => setOpen((v) => !v)}
-          aria-label="Menu"
+          aria-label={open ? "Fechar menu" : "Abrir menu"}
+          aria-expanded={open}
         >
-          <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M4 6h16M4 12h16M4 18h16" strokeLinecap="round" />
-          </svg>
+          {open ? (
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M6 6l12 12M18 6L6 18" strokeLinecap="round" />
+            </svg>
+          ) : (
+            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" />
+            </svg>
+          )}
         </button>
       </nav>
 
       {open && (
-        <div className="border-t border-white/10 bg-brand-950 px-4 py-3 md:hidden">
-          <div className="flex flex-col gap-1">
+        <div className="navbar-mobile-menu border-t border-white/10 md:hidden">
+          <div className="container-app flex flex-col gap-1.5 py-4">
             {links.map((l) => (
-              <Link
+              <NavLink
                 key={l.href}
                 href={l.href}
+                label={l.label}
+                active={pathname === l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/10"
-              >
-                {l.label}
-              </Link>
+                className="px-4 py-2.5"
+              />
             ))}
             {isAdmin && (
-              <Link
+              <NavLink
                 href="/admin"
+                label="Painel Admin"
+                active={pathname.startsWith("/admin")}
                 onClick={() => setOpen(false)}
-                className="rounded-lg px-3 py-2.5 text-sm font-semibold text-accent-400 hover:bg-white/10"
-              >
-                Painel Admin
-              </Link>
+                className="px-4 py-2.5"
+              />
             )}
             <div className="my-2 h-px bg-white/10" />
             {status === "authenticated" ? (
@@ -134,34 +185,41 @@ export function Navbar({ poolName }: { poolName: string }) {
                 <Link
                   href="/perfil"
                   onClick={() => setOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/10"
+                  className="navbar-profile px-4 py-2.5"
                 >
-                  Meu Perfil
+                  <Avatar
+                    name={session.user?.name ?? "?"}
+                    userId={(session.user as any)?.id}
+                    size={34}
+                  />
+                  <span className="text-sm font-semibold text-white/90">
+                    Meu Perfil
+                  </span>
                 </Link>
                 <button
                   onClick={() => signOut({ callbackUrl: "/" })}
-                  className="rounded-lg px-3 py-2.5 text-left text-sm font-medium text-white/60 hover:bg-white/10"
+                  className="navbar-ghost-btn px-4 py-2.5 text-left"
                 >
                   Sair
                 </button>
               </>
             ) : (
-              <>
+              <div className="flex flex-col gap-2 px-1 pt-1">
                 <Link
                   href="/login"
                   onClick={() => setOpen(false)}
-                  className="rounded-lg px-3 py-2.5 text-sm font-medium text-white/80 hover:bg-white/10"
+                  className="navbar-ghost-btn px-4 py-2.5 text-center"
                 >
                   Entrar
                 </Link>
                 <Link
                   href="/cadastro"
                   onClick={() => setOpen(false)}
-                  className="btn-accent mt-1"
+                  className="btn-accent justify-center shadow-lg shadow-accent-500/20"
                 >
                   Participar
                 </Link>
-              </>
+              </div>
             )}
           </div>
         </div>

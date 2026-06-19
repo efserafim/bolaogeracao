@@ -22,7 +22,7 @@ function pad(n: number) {
 }
 
 function useCountdown(kickoff: string) {
-  const [left, setLeft] = useState(() => calcLeft(kickoff));
+  const [left, setLeft] = useState<ReturnType<typeof calcLeft> | null>(null);
 
   useEffect(() => {
     const tick = () => setLeft(calcLeft(kickoff));
@@ -105,8 +105,10 @@ export function BrazilCountdown({
 }) {
   const { opponent, brazilIsHome } = getOpponent(match.homeTeam, match.awayTeam);
   const left = useCountdown(match.kickoff);
-  const urgent = !left.done && left.days === 0 && left.hours < 24;
-  const isLive = type === "live" || (type === "upcoming" && left.done);
+  const urgent =
+    left !== null && !left.done && left.days === 0 && left.hours < 24;
+  const isLive =
+    type === "live" || (type === "upcoming" && left !== null && left.done);
 
   return (
     <section className="relative overflow-hidden border-b border-green-700/30 bg-gradient-to-r from-green-700 via-green-600 to-yellow-500">
@@ -146,14 +148,26 @@ export function BrazilCountdown({
           </p>
         </div>
 
-        {!isLive && !left.done && (
+        {!isLive && (left === null || !left.done) && (
           <div className="flex flex-wrap items-center gap-2 sm:gap-2.5">
-            {left.days > 0 && (
-              <CountdownBox value={pad(left.days)} label="dias" />
+            {(left === null || left.days > 0) && (
+              <CountdownBox
+                value={left ? pad(left.days) : "--"}
+                label="dias"
+              />
             )}
-            <CountdownBox value={pad(left.hours)} label="horas" />
-            <CountdownBox value={pad(left.minutes)} label="min" />
-            <CountdownBox value={pad(left.seconds)} label="seg" />
+            <CountdownBox
+              value={left ? pad(left.hours) : "--"}
+              label="horas"
+            />
+            <CountdownBox
+              value={left ? pad(left.minutes) : "--"}
+              label="min"
+            />
+            <CountdownBox
+              value={left ? pad(left.seconds) : "--"}
+              label="seg"
+            />
             <Link
               href="/palpites"
               className="ml-1 shrink-0 rounded-xl bg-yellow-400 px-3 py-2 text-xs font-bold text-green-900 shadow hover:bg-yellow-300 sm:text-sm"

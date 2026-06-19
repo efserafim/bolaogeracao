@@ -70,7 +70,10 @@ export default async function RootLayout({
       <body className="min-h-screen font-sans antialiased">
         <Providers>
           <div className="flex min-h-screen flex-col">
-            <Navbar poolName={settings?.poolName ?? "Bolão da Copa"} />
+            <Navbar
+              parishName={settings?.parishName ?? "Grupo Jovem geração Eucaristica"}
+              parishSubtitle="Paróquia Santo Antônio - Bacaxá"
+            />
             {brazilHighlight && (
               <>
                 <BrazilCountdown

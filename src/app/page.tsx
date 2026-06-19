@@ -1,5 +1,4 @@
 import Link from "next/link";
-import Image from "next/image";
 import { getSettings } from "@/lib/settings";
 import { getRanking } from "@/lib/ranking";
 import { prisma } from "@/lib/prisma";
@@ -31,22 +30,7 @@ export default async function HomePage() {
       <section className="hero-photo relative overflow-hidden">
         <div className="container-app relative z-10 grid min-w-0 items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:py-24">
           <div className="min-w-0 animate-fade-in-up">
-            <div className="mb-6 flex items-center gap-4">
-              <div className="inline-flex shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-brand-400 via-brand-600 to-brand-800 p-3 shadow-[0_18px_55px_-12px_rgba(29,102,241,0.75)] ring-4 ring-white/60">
-                <Image
-                  src="/logo.png"
-                  alt="Grupo Jovem Geração Eucarística"
-                  width={112}
-                  height={112}
-                  priority
-                  className="h-20 w-20 object-contain drop-shadow-sm sm:h-24 sm:w-24"
-                />
-              </div>
-              <span className="font-display text-2xl font-extrabold leading-tight text-white sm:text-3xl">
-                {settings.parishName}
-              </span>
-            </div>
-            <h1 className="mt-4 font-display text-4xl font-extrabold leading-tight text-white sm:text-5xl">
+            <h1 className="font-display text-4xl font-extrabold leading-tight text-white sm:text-5xl">
               {settings.poolName}
             </h1>
             <p className="mt-4 max-w-lg text-lg text-white/80">
