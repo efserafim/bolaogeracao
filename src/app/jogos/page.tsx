@@ -2,6 +2,7 @@ import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 import { PageHeader, StatusBadge } from "@/components/PageHeader";
 import { TeamFlag } from "@/components/TeamFlag";
+import { MatchVenue } from "@/components/MatchVenue";
 import { dayKey, formatDay, formatMatchMeta, formatTime } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth";
 import { getPoolMatchFilter } from "@/lib/settings";
@@ -79,6 +80,12 @@ export default async function JogosPage() {
                           </span>
                           <StatusBadge status={m.status} />
                         </div>
+
+                        {m.venue && (
+                          <div className="mt-2">
+                            <MatchVenue venue={m.venue} />
+                          </div>
+                        )}
 
                         <div className="mt-4 flex items-center gap-3">
                           <TeamFlag name={m.homeTeam} crest={m.homeCrest} />

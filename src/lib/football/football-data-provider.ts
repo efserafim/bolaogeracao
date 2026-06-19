@@ -60,6 +60,7 @@ export class FootballDataProvider implements FootballProvider {
       awayTeam: m.awayTeam?.name ?? "A definir",
       homeCrest: m.homeTeam?.crest ?? null,
       awayCrest: m.awayTeam?.crest ?? null,
+      venue: m.venue ?? null,
       kickoff: m.utcDate,
       status: mapStatus(m.status),
       homeScore: m.score?.fullTime?.home ?? null,

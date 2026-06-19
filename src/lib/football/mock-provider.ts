@@ -57,6 +57,7 @@ function buildMatches(): ProviderMatch[] {
     awayTeam: away,
     homeCrest: crest(home),
     awayCrest: crest(away),
+    venue: null,
     kickoff,
     status,
     homeScore: hs,

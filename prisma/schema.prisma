@@ -44,6 +44,7 @@ model Match {
   awayTeam    String
   homeCrest   String?
   awayCrest   String?
+  venue       String?
   kickoff     DateTime
   status      MatchStatus  @default(SCHEDULED)
   homeScore   Int?

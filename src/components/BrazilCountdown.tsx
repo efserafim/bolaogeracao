@@ -12,6 +12,7 @@ export interface BrazilMatchInfo {
   awayTeam: string;
   homeCrest: string | null;
   awayCrest: string | null;
+  venue: string | null;
   kickoff: string;
 }
 
@@ -120,6 +121,12 @@ export function BrazilCountdown({
                 Brasil × {teamAbbrev(opponent)} ·{" "}
                 {brazilIsHome ? "em casa" : "fora"} ·{" "}
                 {formatKickoff(match.kickoff)}
+                {match.venue && (
+                  <>
+                    {" "}
+                    · 📍 {match.venue}
+                  </>
+                )}
               </>
             )}
           </p>

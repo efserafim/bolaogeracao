@@ -3,6 +3,7 @@ import { getCurrentUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PageHeader, StatusBadge } from "@/components/PageHeader";
 import { TeamFlag } from "@/components/TeamFlag";
+import { MatchVenue } from "@/components/MatchVenue";
 
 export const dynamic = "force-dynamic";
 
@@ -50,10 +51,17 @@ export default async function HistoricoPage() {
                   key={p.id}
                   className="card flex flex-col gap-3 p-4 sm:flex-row sm:items-center"
                 >
-                  <div className="flex flex-1 items-center gap-3">
-                    <TeamFlag name={m.homeTeam} crest={m.homeCrest} />
-                    <span className="text-slate-300">×</span>
-                    <TeamFlag name={m.awayTeam} crest={m.awayCrest} align="right" />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-3">
+                      <TeamFlag name={m.homeTeam} crest={m.homeCrest} />
+                      <span className="text-slate-300">×</span>
+                      <TeamFlag name={m.awayTeam} crest={m.awayCrest} align="right" />
+                    </div>
+                    {m.venue && (
+                      <div className="mt-2">
+                        <MatchVenue venue={m.venue} />
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex items-center justify-between gap-4 sm:justify-end">

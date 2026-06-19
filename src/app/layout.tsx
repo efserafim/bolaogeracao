@@ -5,8 +5,12 @@ import { Providers } from "./providers";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { getSettings } from "@/lib/settings";
-import { getBrazilMatchHighlight } from "@/lib/brazil-match";
+import {
+  getBrazilMatchHighlight,
+  isBrazilGameToday,
+} from "@/lib/brazil-match";
 import { BrazilCountdown } from "@/components/BrazilCountdown";
+import { GabrielRunner } from "@/components/GabrielRunner";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const poppins = Poppins({
@@ -63,6 +67,10 @@ export default async function RootLayout({
 }) {
   const settings = await getSettings().catch(() => null);
   const brazilHighlight = await getBrazilMatchHighlight().catch(() => null);
+  const showGabriel =
+    brazilHighlight &&
+    (brazilHighlight.type === "live" ||
+      isBrazilGameToday(brazilHighlight.match.kickoff));
 
   return (
     <html lang="pt-BR" className={`${inter.variable} ${poppins.variable}`}>
@@ -76,6 +84,7 @@ export default async function RootLayout({
                 match={brazilHighlight.match}
               />
             )}
+            {showGabriel && <GabrielRunner />}
             <main className="flex-1">{children}</main>
             <Footer
               poolName={settings?.poolName ?? "Bolão da Copa"}

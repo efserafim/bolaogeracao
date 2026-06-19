@@ -13,6 +13,7 @@ export interface ProviderMatch {
   awayTeam: string;
   homeCrest?: string | null;
   awayCrest?: string | null;
+  venue?: string | null;
   kickoff: string;
   status: ProviderMatchStatus;
   homeScore: number | null;

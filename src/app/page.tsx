@@ -218,8 +218,9 @@ export default async function HomePage() {
                   <span className="text-slate-400">×</span>{" "}
                   {teamAbbrev(m.awayTeam)}
                 </span>
-                <span className="text-xs text-slate-500">
+                <span className="block text-xs text-slate-500">
                   {formatKickoff(m.kickoff)}
+                  {m.venue && ` · 📍 ${m.venue}`}
                 </span>
               </li>
             ))}

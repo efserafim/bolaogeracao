@@ -43,6 +43,7 @@ async function bulkUpsertMatches(matches: ProviderMatch[]) {
           ${m.awayTeam},
           ${m.homeCrest},
           ${m.awayCrest},
+          ${m.venue},
           ${new Date(m.kickoff)},
           ${Prisma.raw(`'${m.status}'::"MatchStatus"`)},
           ${m.homeScore},
@@ -55,7 +56,7 @@ async function bulkUpsertMatches(matches: ProviderMatch[]) {
     await prisma.$executeRaw`
       INSERT INTO "Match" (
         "id", "externalId", "competition", "stage", "groupName",
-        "homeTeam", "awayTeam", "homeCrest", "awayCrest", "kickoff",
+        "homeTeam", "awayTeam", "homeCrest", "awayCrest", "venue", "kickoff",
         "status", "homeScore", "awayScore", "createdAt", "updatedAt"
       )
       VALUES ${Prisma.join(rows)}
@@ -67,6 +68,7 @@ async function bulkUpsertMatches(matches: ProviderMatch[]) {
         "awayTeam" = EXCLUDED."awayTeam",
         "homeCrest" = EXCLUDED."homeCrest",
         "awayCrest" = EXCLUDED."awayCrest",
+        "venue" = EXCLUDED."venue",
         "kickoff" = EXCLUDED."kickoff",
         "status" = EXCLUDED."status",
         "homeScore" = EXCLUDED."homeScore",

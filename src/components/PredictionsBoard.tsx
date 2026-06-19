@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { TeamFlag } from "./TeamFlag";
+import { MatchVenue } from "./MatchVenue";
 import { dayKey, formatDay, formatMatchMeta, formatTime } from "@/lib/format";
 
 export interface BoardMatch {
@@ -13,6 +14,7 @@ export interface BoardMatch {
   kickoff: string;
   groupName: string | null;
   stage: string | null;
+  venue: string | null;
   homeGuess: number | null;
   awayGuess: number | null;
   locked?: boolean;
@@ -119,6 +121,12 @@ function MatchRow({
           <span>{formatTime(match.kickoff)}</span>
         </div>
       </div>
+
+      {match.venue && (
+        <div className="mt-2">
+          <MatchVenue venue={match.venue} />
+        </div>
+      )}
 
       <div className="mt-4 flex flex-col gap-3 sm:hidden">
         <div className="flex items-center justify-between gap-3">

@@ -28,6 +28,7 @@ export async function getBrazilMatchHighlight() {
         awayTeam: live.awayTeam,
         homeCrest: live.homeCrest,
         awayCrest: live.awayCrest,
+        venue: live.venue,
         kickoff: live.kickoff.toISOString(),
       },
     };
@@ -52,9 +53,17 @@ export async function getBrazilMatchHighlight() {
       awayTeam: next.awayTeam,
       homeCrest: next.homeCrest,
       awayCrest: next.awayCrest,
+      venue: next.venue,
       kickoff: next.kickoff.toISOString(),
     },
   };
+}
+
+export function isBrazilGameToday(kickoff: string | Date): boolean {
+  const kick = typeof kickoff === "string" ? new Date(kickoff) : kickoff;
+  const fmt = (d: Date) =>
+    d.toLocaleDateString("pt-BR", { timeZone: "America/Sao_Paulo" });
+  return fmt(new Date()) === fmt(kick);
 }
 
 export function getOpponent(

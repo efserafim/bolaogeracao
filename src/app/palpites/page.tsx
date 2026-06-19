@@ -44,6 +44,7 @@ export default async function PalpitesPage() {
       kickoff: m.kickoff.toISOString(),
       groupName: m.groupName,
       stage: m.stage,
+      venue: m.venue,
       homeGuess: pred?.homeScore ?? null,
       awayGuess: pred?.awayScore ?? null,
       locked,
