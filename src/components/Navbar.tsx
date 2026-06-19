@@ -69,16 +69,14 @@ export function Navbar({
     <header className="navbar-header sticky top-0 z-40">
       <nav className="navbar-inner container-app">
         <Link href="/" className="navbar-brand group">
-          <div className="navbar-logo-badge shrink-0">
-            <Image
-              src="/logo.png"
-              alt={parishName}
-              width={80}
-              height={80}
-              className="navbar-logo-image"
-              priority
-            />
-          </div>
+          <Image
+            src="/logo.png"
+            alt={parishName}
+            width={112}
+            height={112}
+            className="navbar-logo-image shrink-0"
+            priority
+          />
           <span className="navbar-brand-copy">
             <span className="navbar-brand-title">{parishName}</span>
             <span className="navbar-brand-subtitle">{parishSubtitle}</span>
