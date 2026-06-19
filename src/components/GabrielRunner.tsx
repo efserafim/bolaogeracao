@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import { BrazilFlag } from "@/components/BrazilFlag";
 
 export function GabrielRunner() {
   return (
@@ -14,7 +15,10 @@ export function GabrielRunner() {
           className="gabriel-runner-photo"
           priority
         />
-        <span className="gabriel-runner-label">VAI BRASIL! 🇧🇷</span>
+        <span className="gabriel-runner-label inline-flex items-center gap-1">
+          VAI BRASIL!
+          <BrazilFlag className="h-3 w-4" />
+        </span>
       </div>
     </div>
   );

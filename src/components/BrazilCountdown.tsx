@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 import { formatKickoff } from "@/lib/format";
 import { getOpponent } from "@/lib/brazil-match";
 import { teamAbbrev } from "@/lib/teams";
+import { BrazilFlag } from "@/components/BrazilFlag";
 
 export interface BrazilMatchInfo {
   id: string;
@@ -100,7 +101,7 @@ export function BrazilCountdown({
       <div className="container-app relative z-10 flex flex-col gap-3 py-4 sm:flex-row sm:items-center sm:justify-between sm:py-3">
         <div className="min-w-0">
           <p className="flex flex-wrap items-center gap-2 font-display text-sm font-extrabold uppercase tracking-wide text-white sm:text-base">
-            <span className="text-xl">🇧🇷</span>
+            <BrazilFlag className="h-5 w-7 sm:h-6 sm:w-8" />
             {type === "live" ? (
               <span className="animate-pulse">Brasil em campo agora!</span>
             ) : urgent ? (
