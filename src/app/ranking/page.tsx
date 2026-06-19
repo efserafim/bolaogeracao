@@ -1,7 +1,7 @@
 import { getRanking } from "@/lib/ranking";
 import { getCurrentUser } from "@/lib/auth";
 import { PageHeader } from "@/components/PageHeader";
-import { RankingParticipant } from "@/components/RankingParticipant";
+import { Avatar } from "@/components/Avatar";
 import { AutoRefresh } from "@/components/AutoRefresh";
 
 export const dynamic = "force-dynamic";
@@ -10,7 +10,6 @@ const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
 export default async function RankingPage() {
   const [ranking, me] = await Promise.all([getRanking(), getCurrentUser()]);
-  const isLoggedIn = !!me;
 
   const podium = ranking.slice(0, 3);
 
@@ -19,11 +18,7 @@ export default async function RankingPage() {
       <AutoRefresh intervalMs={45000} />
       <PageHeader
         title="Ranking Geral"
-        subtitle={
-          isLoggedIn
-            ? "Clique no nome de um participante para ver os palpites de hoje e o histórico completo."
-            : "A classificação do bolão, atualizada automaticamente após cada jogo."
-        }
+        subtitle="A classificação do bolão, atualizada automaticamente após cada jogo."
       />
 
       <div className="container-app py-8">
@@ -47,14 +42,15 @@ export default async function RankingPage() {
                     }`}
                   >
                     <span className="text-3xl">{medals[r.position]}</span>
-                    <RankingParticipant
-                      userId={r.userId}
+                    <Avatar
                       name={r.name}
-                      avatarSize={64}
-                      isMe={me?.id === r.userId}
-                      isLoggedIn={isLoggedIn}
-                      layout="stacked"
+                      userId={r.userId}
+                      size={64}
+                      className="mt-2"
                     />
+                    <p className="mt-2 max-w-full truncate font-display font-bold text-slate-900">
+                      {r.name}
+                    </p>
                     <p className="font-display text-2xl font-extrabold text-brand-700">
                       {r.totalPoints}
                       <span className="text-sm font-normal text-slate-400">
@@ -82,14 +78,20 @@ export default async function RankingPage() {
                       <span className="w-7 shrink-0 text-center font-display text-lg font-bold text-slate-400">
                         {medals[r.position] ?? r.position}
                       </span>
-                      <RankingParticipant
-                        userId={r.userId}
-                        name={r.name}
-                        avatarSize={40}
-                        isMe={isMe}
-                        isLoggedIn={isLoggedIn}
-                        className="min-w-0 flex-1"
-                      />
+                      <Avatar name={r.name} userId={r.userId} size={40} />
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate font-medium text-slate-800">
+                          {r.name}
+                          {isMe && (
+                            <span className="ml-1 text-xs font-semibold text-brand-600">
+                              (você)
+                            </span>
+                          )}
+                        </p>
+                        <p className="text-xs text-slate-500">
+                          {r.scored}/{r.predictions} palpites · {r.exact} exatos
+                        </p>
+                      </div>
                       <span className="shrink-0 font-display text-lg font-bold text-brand-700">
                         {r.totalPoints}
                         <span className="ml-0.5 text-xs font-normal text-slate-400">
@@ -97,9 +99,6 @@ export default async function RankingPage() {
                         </span>
                       </span>
                     </div>
-                    <p className="mt-2 pl-10 text-xs text-slate-500">
-                      {r.scored}/{r.predictions} palpites · {r.exact} exatos
-                    </p>
                   </div>
                 );
               })}
@@ -128,13 +127,17 @@ export default async function RankingPage() {
                           {medals[r.position] ?? r.position}
                         </td>
                         <td className="px-4 py-3">
-                          <RankingParticipant
-                            userId={r.userId}
-                            name={r.name}
-                            avatarSize={34}
-                            isMe={isMe}
-                            isLoggedIn={isLoggedIn}
-                          />
+                          <div className="flex min-w-0 items-center gap-3">
+                            <Avatar name={r.name} userId={r.userId} size={34} />
+                            <span className="truncate font-medium text-slate-800">
+                              {r.name}
+                              {isMe && (
+                                <span className="ml-2 text-xs font-semibold text-brand-600">
+                                  (você)
+                                </span>
+                              )}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-3 text-center text-slate-500">
                           {r.scored}/{r.predictions}
