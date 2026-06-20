@@ -3,10 +3,11 @@ import { getSettings } from "@/lib/settings";
 import { getRanking } from "@/lib/ranking";
 import { prisma } from "@/lib/prisma";
 import { Avatar } from "@/components/Avatar";
+import { AutoRefresh } from "@/components/AutoRefresh";
+import { TeamFlag } from "@/components/TeamFlag";
 import { formatKickoff } from "@/lib/format";
-import { teamAbbrev } from "@/lib/teams";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function HomePage() {
   const settings = await getSettings();
@@ -27,6 +28,7 @@ export default async function HomePage() {
 
   return (
     <div>
+      <AutoRefresh intervalMs={90000} />
       <section className="hero-photo relative overflow-hidden">
         <div className="container-app relative z-10 grid min-w-0 items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:py-24">
           <div className="min-w-0 animate-fade-in-up">
@@ -91,7 +93,7 @@ export default async function HomePage() {
                   <span className="w-6 shrink-0 text-center font-display font-bold text-slate-400">
                     {r.position}
                   </span>
-                  <Avatar name={r.name} userId={r.userId} size={36} />
+                  <Avatar name={r.name} image={r.image} userId={r.userId} size={36} />
                   <span className="min-w-0 flex-1 truncate font-medium text-slate-800">
                     {r.name}
                   </span>
@@ -195,16 +197,32 @@ export default async function HomePage() {
             {nextMatches.map((m) => (
               <li
                 key={m.id}
-                className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3"
+                className="flex flex-col gap-2.5 rounded-xl bg-slate-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
-                <span className="font-medium text-slate-800">
-                  {teamAbbrev(m.homeTeam)}{" "}
-                  <span className="text-slate-400">×</span>{" "}
-                  {teamAbbrev(m.awayTeam)}
-                </span>
-                <span className="block text-xs text-slate-500">
+                <div className="flex min-w-0 flex-1 items-center gap-2">
+                  <TeamFlag
+                    name={m.homeTeam}
+                    crest={m.homeCrest}
+                    className="min-w-0 flex-1"
+                  />
+                  <span className="shrink-0 font-display text-sm font-bold text-slate-300">
+                    ×
+                  </span>
+                  <TeamFlag
+                    name={m.awayTeam}
+                    crest={m.awayCrest}
+                    align="right"
+                    className="min-w-0 flex-1"
+                  />
+                </div>
+                <span className="shrink-0 text-xs text-slate-500 sm:text-right">
                   {formatKickoff(m.kickoff)}
-                  {m.venue && ` · 📍 ${m.venue}`}
+                  {m.venue && (
+                    <>
+                      {" "}
+                      · 📍 {m.venue}
+                    </>
+                  )}
                 </span>
               </li>
             ))}

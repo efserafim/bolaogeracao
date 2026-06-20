@@ -18,13 +18,15 @@ export function Avatar({
 }) {
   const [urlFailed, setUrlFailed] = useState(false);
 
-  if (userId && !urlFailed) {
+  if (image && !urlFailed) {
     return (
       <img
-        src={`/api/users/${userId}/avatar`}
+        src={image}
         alt={name}
         width={size}
         height={size}
+        loading="lazy"
+        decoding="async"
         onError={() => setUrlFailed(true)}
         className={`rounded-full object-cover ring-2 ring-white ${className}`}
         style={{ width: size, height: size }}
@@ -32,13 +34,16 @@ export function Avatar({
     );
   }
 
-  if (image) {
+  if (userId && !urlFailed) {
     return (
       <img
-        src={image}
+        src={`/api/users/${userId}/avatar`}
         alt={name}
         width={size}
         height={size}
+        loading="lazy"
+        decoding="async"
+        onError={() => setUrlFailed(true)}
         className={`rounded-full object-cover ring-2 ring-white ${className}`}
         style={{ width: size, height: size }}
       />

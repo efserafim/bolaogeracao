@@ -1,6 +1,9 @@
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { dayKey } from "./format";
 import { prisma } from "./prisma";
 import { isBrazilTeam } from "./teams";
+import { CACHE_TAGS } from "./revalidate";
 
 function brazilWhere() {
   return {
@@ -33,7 +36,7 @@ function toMatchInfo(match: {
   };
 }
 
-export async function getBrazilMatchHighlight() {
+async function loadBrazilMatchHighlight() {
   const now = new Date();
 
   const live = await prisma.match.findFirst({
@@ -75,6 +78,17 @@ export async function getBrazilMatchHighlight() {
     match: toMatchInfo(next),
   };
 }
+
+const getBrazilMatchHighlightCached = unstable_cache(
+  loadBrazilMatchHighlight,
+  ["brazil-highlight"],
+  {
+    revalidate: 45,
+    tags: [CACHE_TAGS.brazil],
+  }
+);
+
+export const getBrazilMatchHighlight = cache(getBrazilMatchHighlightCached);
 
 export function isBrazilGameToday(kickoff: string | Date): boolean {
   return dayKey(new Date()) === dayKey(kickoff);

@@ -62,8 +62,10 @@ export default async function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const settings = await getSettings().catch(() => null);
-  const brazilHighlight = await getBrazilMatchHighlight().catch(() => null);
+  const [settings, brazilHighlight] = await Promise.all([
+    getSettings().catch(() => null),
+    getBrazilMatchHighlight().catch(() => null),
+  ]);
 
   return (
     <html lang="pt-BR" className={`${inter.variable} ${poppins.variable}`}>

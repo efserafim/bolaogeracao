@@ -8,19 +8,23 @@ import { getCurrentUser } from "@/lib/auth";
 import { getPoolMatchFilter } from "@/lib/settings";
 import { AutoRefresh } from "@/components/AutoRefresh";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 export default async function JogosPage() {
-  const user = await getCurrentUser();
-  const poolFilter = await getPoolMatchFilter();
-  const matches = await prisma.match.findMany({
-    where: poolFilter,
-    orderBy: { kickoff: "asc" },
-  });
+  const [user, poolFilter] = await Promise.all([
+    getCurrentUser(),
+    getPoolMatchFilter(),
+  ]);
 
-  const myPredictions = user
-    ? await prisma.prediction.findMany({ where: { userId: user.id } })
-    : [];
+  const [matches, myPredictions] = await Promise.all([
+    prisma.match.findMany({
+      where: poolFilter,
+      orderBy: { kickoff: "asc" },
+    }),
+    user
+      ? prisma.prediction.findMany({ where: { userId: user.id } })
+      : Promise.resolve([]),
+  ]);
   const predByMatch = new Map(myPredictions.map((p) => [p.matchId, p]));
 
   const byDay = new Map<string, typeof matches>();
@@ -38,7 +42,7 @@ export default async function JogosPage() {
 
   return (
     <div>
-      <AutoRefresh intervalMs={45000} />
+      <AutoRefresh intervalMs={90000} />
       <PageHeader
         title="Jogos da Copa"
         subtitle="Acompanhe os jogos, resultados e dê seus palpites antes do apito inicial."

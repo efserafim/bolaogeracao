@@ -4,6 +4,7 @@ import { getFootballProvider } from "./football";
 import { prismaSync as prisma } from "./prisma-sync";
 import { calculatePoints } from "./scoring";
 import { getRules, getPoolMatchFilter } from "./settings";
+import { invalidateAppCache, CACHE_TAGS } from "./revalidate";
 
 // Trava com expiracao — se a Netlify matar a funcao (502), nao fica presa
 let syncLockUntil = 0;
@@ -163,6 +164,9 @@ export async function syncEverything() {
     ]);
 
     const predictionsScored = await scoreFinishedMatches();
+    if (matchesSynced > 0 || predictionsScored > 0) {
+      invalidateAppCache();
+    }
     return {
       provider: provider.name,
       matchesSynced,
@@ -231,6 +235,7 @@ export async function scoreFinishedMatches() {
   if (updates.length === 0) return 0;
 
   await prisma.$transaction(updates);
+  invalidateAppCache([CACHE_TAGS.ranking]);
   return updates.length;
 }
 

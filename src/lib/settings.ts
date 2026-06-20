@@ -1,29 +1,29 @@
+import { cache } from "react";
+import { unstable_cache } from "next/cache";
 import { prisma } from "./prisma";
 import type { ScoreRules } from "./scoring";
+import { CACHE_TAGS, invalidateAppCache } from "./revalidate";
 
-type SettingsRow = Awaited<ReturnType<typeof prisma.settings.findUnique>>;
-
-// Cache em memoria das configuracoes (mudam raramente). Evita 1 consulta
-// ao banco em cada pagina, reduzindo a latencia com o banco remoto.
-const SETTINGS_TTL_MS = 15000;
-let settingsCache: { value: NonNullable<SettingsRow>; at: number } | null = null;
-
-export function clearSettingsCache() {
-  settingsCache = null;
-}
-
-export async function getSettings() {
-  if (settingsCache && Date.now() - settingsCache.at < SETTINGS_TTL_MS) {
-    return settingsCache.value;
-  }
+async function loadSettings() {
   let settings = await prisma.settings.findUnique({
     where: { id: "singleton" },
   });
   if (!settings) {
     settings = await prisma.settings.create({ data: { id: "singleton" } });
   }
-  settingsCache = { value: settings, at: Date.now() };
   return settings;
+}
+
+const getSettingsCached = unstable_cache(loadSettings, ["settings-singleton"], {
+  revalidate: 60,
+  tags: [CACHE_TAGS.settings],
+});
+
+/** Configuracoes globais (cache de 60s entre requisicoes). */
+export const getSettings = cache(getSettingsCached);
+
+export function clearSettingsCache() {
+  invalidateAppCache([CACHE_TAGS.settings, CACHE_TAGS.ranking]);
 }
 
 export async function getRules(): Promise<ScoreRules> {

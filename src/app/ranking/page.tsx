@@ -4,7 +4,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { Avatar } from "@/components/Avatar";
 import { AutoRefresh } from "@/components/AutoRefresh";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 30;
 
 const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
@@ -15,7 +15,7 @@ export default async function RankingPage() {
 
   return (
     <div>
-      <AutoRefresh intervalMs={45000} />
+      <AutoRefresh intervalMs={90000} />
       <PageHeader
         title="Ranking Geral"
         subtitle="A classificação do bolão, atualizada automaticamente após cada jogo."
@@ -44,6 +44,7 @@ export default async function RankingPage() {
                     <span className="text-3xl">{medals[r.position]}</span>
                     <Avatar
                       name={r.name}
+                      image={r.image}
                       userId={r.userId}
                       size={64}
                       className="mt-2"
@@ -78,7 +79,7 @@ export default async function RankingPage() {
                       <span className="w-7 shrink-0 text-center font-display text-lg font-bold text-slate-400">
                         {medals[r.position] ?? r.position}
                       </span>
-                      <Avatar name={r.name} userId={r.userId} size={40} />
+                      <Avatar name={r.name} image={r.image} userId={r.userId} size={40} />
                       <div className="min-w-0 flex-1">
                         <p className="truncate font-medium text-slate-800">
                           {r.name}
@@ -128,7 +129,7 @@ export default async function RankingPage() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex min-w-0 items-center gap-3">
-                            <Avatar name={r.name} userId={r.userId} size={34} />
+                            <Avatar name={r.name} image={r.image} userId={r.userId} size={34} />
                             <span className="truncate font-medium text-slate-800">
                               {r.name}
                               {isMe && (

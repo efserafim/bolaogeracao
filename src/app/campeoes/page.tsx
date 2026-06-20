@@ -3,7 +3,7 @@ import { getRanking } from "@/lib/ranking";
 import { PageHeader } from "@/components/PageHeader";
 import { Avatar } from "@/components/Avatar";
 
-export const dynamic = "force-dynamic";
+export const revalidate = 60;
 
 const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
