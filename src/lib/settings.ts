@@ -4,6 +4,17 @@ import { prisma } from "./prisma";
 import type { ScoreRules } from "./scoring";
 import { CACHE_TAGS, invalidateAppCache } from "./revalidate";
 
+type SettingsRow = NonNullable<Awaited<ReturnType<typeof prisma.settings.findUnique>>>;
+
+function normalizeSettings(settings: SettingsRow): SettingsRow {
+  return {
+    ...settings,
+    poolStartsAt: settings.poolStartsAt
+      ? new Date(settings.poolStartsAt as string | Date)
+      : null,
+  };
+}
+
 async function loadSettings() {
   let settings = await prisma.settings.findUnique({
     where: { id: "singleton" },
@@ -11,7 +22,7 @@ async function loadSettings() {
   if (!settings) {
     settings = await prisma.settings.create({ data: { id: "singleton" } });
   }
-  return settings;
+  return normalizeSettings(settings);
 }
 
 const getSettingsCached = unstable_cache(loadSettings, ["settings-singleton"], {
@@ -20,7 +31,9 @@ const getSettingsCached = unstable_cache(loadSettings, ["settings-singleton"], {
 });
 
 /** Configuracoes globais (cache de 60s entre requisicoes). */
-export const getSettings = cache(getSettingsCached);
+export const getSettings = cache(async () =>
+  normalizeSettings(await getSettingsCached())
+);
 
 export function clearSettingsCache() {
   invalidateAppCache([CACHE_TAGS.settings, CACHE_TAGS.ranking]);

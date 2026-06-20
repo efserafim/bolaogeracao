@@ -11,9 +11,13 @@ export const revalidate = 30;
 
 export default async function HomePage() {
   const settings = await getSettings();
-  const startsAt = settings.poolStartsAt;
+  const startsAt = settings.poolStartsAt
+    ? new Date(settings.poolStartsAt)
+    : null;
   const minKickoff =
-    startsAt && startsAt.getTime() > Date.now() ? startsAt : new Date();
+    startsAt && !Number.isNaN(startsAt.getTime()) && startsAt.getTime() > Date.now()
+      ? startsAt
+      : new Date();
 
   const [fullRanking, nextMatches, participants] = await Promise.all([
     getRanking(),
