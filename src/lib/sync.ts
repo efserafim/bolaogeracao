@@ -72,8 +72,8 @@ async function bulkUpsertMatches(matches: ProviderMatch[]) {
         "venue" = EXCLUDED."venue",
         "kickoff" = EXCLUDED."kickoff",
         "status" = EXCLUDED."status",
-        "homeScore" = EXCLUDED."homeScore",
-        "awayScore" = EXCLUDED."awayScore",
+        "homeScore" = CASE WHEN "Match"."scoreLocked" THEN "Match"."homeScore" ELSE EXCLUDED."homeScore" END,
+        "awayScore" = CASE WHEN "Match"."scoreLocked" THEN "Match"."awayScore" ELSE EXCLUDED."awayScore" END,
         "updatedAt" = NOW()
     `;
   }
@@ -163,7 +163,7 @@ export async function syncEverything() {
       persistStandings(standings),
     ]);
 
-    const predictionsScored = await scoreFinishedMatches();
+    const predictionsScored = await rescoreAllFinishedMatches();
     if (matchesSynced > 0 || predictionsScored > 0) {
       invalidateAppCache();
     }
@@ -190,7 +190,7 @@ export async function syncStandings() {
   return persistStandings(standings);
 }
 
-export async function scoreFinishedMatches() {
+export async function rescoreAllFinishedMatches() {
   const rules = await getRules();
   const poolFilter = await getPoolMatchFilter();
 
@@ -200,16 +200,9 @@ export async function scoreFinishedMatches() {
       status: "FINISHED",
       homeScore: { not: null },
       awayScore: { not: null },
-      predictions: { some: { scored: false } },
     },
-    include: {
-      predictions: {
-        where: { scored: false },
-      },
-    },
+    include: { predictions: true },
   });
-
-  if (finished.length === 0) return 0;
 
   const updates = [];
   for (const match of finished) {
@@ -223,12 +216,14 @@ export async function scoreFinishedMatches() {
         result,
         rules
       );
-      updates.push(
-        prisma.prediction.update({
-          where: { id: p.id },
-          data: { points, scored: true },
-        })
-      );
+      if (!p.scored || p.points !== points) {
+        updates.push(
+          prisma.prediction.update({
+            where: { id: p.id },
+            data: { points, scored: true },
+          })
+        );
+      }
     }
   }
 
@@ -237,6 +232,11 @@ export async function scoreFinishedMatches() {
   await prisma.$transaction(updates);
   invalidateAppCache([CACHE_TAGS.ranking]);
   return updates.length;
+}
+
+/** @deprecated use rescoreAllFinishedMatches */
+export async function scoreFinishedMatches() {
+  return rescoreAllFinishedMatches();
 }
 
 export type SyncStep = "matches" | "standings" | "score";
@@ -249,5 +249,5 @@ export async function runSyncStep(step: SyncStep) {
   if (step === "standings") {
     return { provider: provider.name, standingsSynced: await syncStandings() };
   }
-  return { provider: provider.name, predictionsScored: await scoreFinishedMatches() };
+  return { provider: provider.name, predictionsScored: await rescoreAllFinishedMatches() };
 }
