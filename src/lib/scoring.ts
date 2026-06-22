@@ -47,3 +47,21 @@ export function calculatePoints(
 
   return 0;
 }
+
+export function describePoints(
+  prediction: { homeScore: number; awayScore: number },
+  result: { homeScore: number; awayScore: number },
+  rules: ScoreRules = DEFAULT_RULES
+): { points: number; reason: string } {
+  const points = calculatePoints(prediction, result, rules);
+  if (points === rules.pointsExact) {
+    return { points, reason: "Placar exato" };
+  }
+  if (points === rules.pointsResult) {
+    return { points, reason: "Acertou o resultado" };
+  }
+  if (points === rules.pointsGoalDiff) {
+    return { points, reason: "Acertou o saldo de gols" };
+  }
+  return { points, reason: "Errou o palpite" };
+}

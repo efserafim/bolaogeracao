@@ -68,8 +68,12 @@ export default async function RootLayout({
   ]);
 
   return (
-    <html lang="pt-BR" className={`${inter.variable} ${poppins.variable}`}>
-      <body className="min-h-screen font-sans antialiased">
+    <html
+      lang="pt-BR"
+      className={`${inter.variable} ${poppins.variable}`}
+      suppressHydrationWarning
+    >
+      <body className="min-h-screen font-sans antialiased" suppressHydrationWarning>
         <Providers>
           <div className="flex min-h-screen flex-col">
             <Navbar

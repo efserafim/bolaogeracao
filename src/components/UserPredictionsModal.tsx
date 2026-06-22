@@ -31,13 +31,99 @@ type Prediction = {
 };
 
 type UserPredictionsData = {
+  viewerId: string;
   user: { id: string; name: string };
   totalPoints: number;
   todayKey: string;
+  rules: { pointsExact: number; pointsResult: number; pointsGoalDiff: number };
+  scoreBreakdown: {
+    matchLabel: string;
+    palpite: string;
+    result: string;
+    points: number;
+    reason: string;
+    kickoff: string;
+  }[];
   predictions: Prediction[];
 };
 
 type Tab = "today" | "history";
+
+function ScoreBreakdown({
+  userName,
+  totalPoints,
+  breakdown,
+}: {
+  userName: string;
+  totalPoints: number;
+  breakdown: UserPredictionsData["scoreBreakdown"];
+}) {
+  const firstName = userName.split(" ")[0];
+  const terms = breakdown.map((row) => row.points);
+  const sum = terms.reduce((a, b) => a + b, 0);
+  const formula =
+    terms.length > 0
+      ? `${terms.map((n) => (n > 0 ? `+${n}` : "0")).join(" ")} = ${sum}`
+      : "0";
+
+  return (
+    <div className="mb-4 space-y-3">
+      <div className="rounded-2xl border-2 border-dashed border-accent-400 bg-gradient-to-br from-accent-50 to-amber-50 p-4">
+        <p className="font-display text-lg font-extrabold text-accent-700">
+          👀 Veio olhar o quê, seu bobo?
+        </p>
+        <p className="mt-1 text-sm text-accent-900/80">
+          Relaxa — {firstName} não é ladrão não. Olha a conta certinha aí embaixo.
+        </p>
+      </div>
+
+      <div className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Conta dos pontos
+        </p>
+        <ul className="mt-3 max-h-48 space-y-2 overflow-y-auto pr-1">
+          {breakdown.map((row) => (
+            <li
+              key={`${row.kickoff}-${row.matchLabel}`}
+              className="flex items-start justify-between gap-2 rounded-lg bg-slate-50 px-3 py-2 text-sm"
+            >
+              <div className="min-w-0">
+                <p className="truncate font-medium text-slate-800">{row.matchLabel}</p>
+                <p className="text-xs text-slate-500">
+                  Palpite {row.palpite} · Resultado {row.result} · {row.reason}
+                </p>
+              </div>
+              <span
+                className={`shrink-0 font-display font-bold ${
+                  row.points > 0 ? "text-emerald-600" : "text-slate-400"
+                }`}
+              >
+                +{row.points}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-4 border-t border-slate-100 pt-3">
+          <p className="break-all font-mono text-xs text-slate-600">{formula}</p>
+          <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+            <p className="font-display text-base font-extrabold text-brand-800">
+              Total: {totalPoints} pts
+            </p>
+            <p className="text-sm font-semibold text-brand-700">
+              Eu não sou ladrão! 🫡
+            </p>
+          </div>
+          {sum !== totalPoints && (
+            <p className="mt-1 text-xs text-slate-400">
+              * Jogos ainda não finalizados não entram nessa soma.
+            </p>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 function PredictionRow({ p }: { p: Prediction }) {
   const m = p.match;
@@ -153,6 +239,7 @@ export function UserPredictionsModal({
     : formatDay(new Date());
 
   const list = tab === "today" ? todayPredictions : (data?.predictions ?? []);
+  const isSnooping = !!data && data.viewerId !== data.user.id;
 
   if (!mounted) return null;
 
@@ -260,6 +347,25 @@ export function UserPredictionsModal({
               >
                 Tentar novamente
               </button>
+            </div>
+          )}
+
+          {!loading && !error && isSnooping && data.scoreBreakdown.length > 0 && (
+            <ScoreBreakdown
+              userName={userName}
+              totalPoints={data.totalPoints}
+              breakdown={data.scoreBreakdown}
+            />
+          )}
+
+          {!loading && !error && isSnooping && data.scoreBreakdown.length === 0 && (
+            <div className="mb-4 rounded-2xl border-2 border-dashed border-accent-400 bg-accent-50 p-4">
+              <p className="font-display text-lg font-extrabold text-accent-700">
+                👀 Veio olhar o quê, seu bobo?
+              </p>
+              <p className="mt-1 text-sm text-accent-900/80">
+                {userName.split(" ")[0]} ainda não pontuou — calma que não tem o que espionar.
+              </p>
             </div>
           )}
 
