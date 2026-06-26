@@ -25,7 +25,7 @@ export async function register() {
     return;
   }
 
-  const intervalMs = Number(process.env.SYNC_INTERVAL_MS ?? 3 * 60 * 1000);
+  const intervalMs = Number(process.env.SYNC_INTERVAL_MS ?? 60_000);
 
   const run = async () => {
     try {

@@ -30,16 +30,27 @@ export function RankingParticipant({
     <button
       type="button"
       onClick={() => setOpen(true)}
-      className="group truncate text-left font-medium text-slate-800 transition hover:text-brand-600"
-      title={`Ver palpites de ${name}`}
+      className="group block w-full min-w-0 truncate text-left font-medium text-slate-800 transition hover:text-brand-600"
+      title={`Ver palpites de ${name}${isMe ? " (você)" : ""}`}
     >
       {name}
+      {isMe && (
+        <span className="ml-1 text-xs font-semibold text-brand-600">(você)</span>
+      )}
       <span className="ml-1 text-xs font-normal text-brand-500 opacity-0 transition group-hover:opacity-100">
         ↗
       </span>
     </button>
   ) : (
-    <span className="truncate font-medium text-slate-800">{name}</span>
+    <span
+      className="block w-full min-w-0 truncate font-medium text-slate-800"
+      title={name}
+    >
+      {name}
+      {isMe && (
+        <span className="ml-1 text-xs font-semibold text-brand-600">(você)</span>
+      )}
+    </span>
   );
 
   if (layout === "stacked") {
@@ -108,14 +119,7 @@ export function RankingParticipant({
         ) : (
           <Avatar name={name} image={image} userId={userId} size={avatarSize} />
         )}
-        <div className="min-w-0">
-          {nameEl}
-          {isMe && (
-            <span className="ml-1 text-xs font-semibold text-brand-600">
-              (você)
-            </span>
-          )}
-        </div>
+        <div className="min-w-0 flex-1 overflow-hidden">{nameEl}</div>
       </div>
       {open && (
         <UserPredictionsModal

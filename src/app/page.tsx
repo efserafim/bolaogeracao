@@ -4,10 +4,11 @@ import { getRanking } from "@/lib/ranking";
 import { prisma } from "@/lib/prisma";
 import { Avatar } from "@/components/Avatar";
 import { AutoRefresh } from "@/components/AutoRefresh";
+import { hasLivePoolMatches } from "@/lib/live-matches";
 import { TeamFlag } from "@/components/TeamFlag";
 import { formatKickoff } from "@/lib/format";
 
-export const revalidate = 30;
+export const revalidate = 15;
 
 export default async function HomePage() {
   const settings = await getSettings();
@@ -19,7 +20,7 @@ export default async function HomePage() {
       ? startsAt
       : new Date();
 
-  const [fullRanking, nextMatches, participants] = await Promise.all([
+  const [fullRanking, nextMatches, participants, live] = await Promise.all([
     getRanking(),
     prisma.match.findMany({
       where: { status: "SCHEDULED", kickoff: { gte: minKickoff } },
@@ -27,12 +28,13 @@ export default async function HomePage() {
       take: 3,
     }),
     prisma.user.count({ where: { role: "USER" } }),
+    hasLivePoolMatches(),
   ]);
   const ranking = fullRanking.slice(0, 5);
 
   return (
     <div>
-      <AutoRefresh intervalMs={90000} />
+      <AutoRefresh live={live} />
       <section className="hero-photo relative overflow-hidden">
         <div className="container-app relative z-10 grid min-w-0 items-center gap-10 py-16 sm:py-20 lg:grid-cols-2 lg:py-24">
           <div className="min-w-0 animate-fade-in-up">

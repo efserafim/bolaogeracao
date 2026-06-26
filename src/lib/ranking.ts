@@ -63,9 +63,9 @@ async function loadRanking(): Promise<RankingRow[]> {
 }
 
 const getRankingCached = unstable_cache(loadRanking, ["ranking-all"], {
-  revalidate: 30,
+  revalidate: 15,
   tags: [CACHE_TAGS.ranking],
 });
 
-/** Ranking completo (cache de 30s entre requisicoes). */
+/** Ranking completo (cache de 15s entre requisicoes). */
 export const getRanking = cache(getRankingCached);

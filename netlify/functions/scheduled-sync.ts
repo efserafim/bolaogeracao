@@ -1,7 +1,8 @@
 import type { Config } from "@netlify/functions";
 
 /**
- * Cron a cada 3 min — dispara sync em background (sem passar pela rota Next.js).
+ * Cron a cada 1 min — dispara sync em background (sem passar pela rota Next.js).
+ * 2 calls/sync fica dentro do limite free da API (10/min).
  */
 export default async () => {
   const base =
@@ -30,5 +31,5 @@ export default async () => {
 };
 
 export const config: Config = {
-  schedule: "*/3 * * * *",
+  schedule: "*/1 * * * *",
 };

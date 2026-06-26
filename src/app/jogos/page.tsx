@@ -1,19 +1,20 @@
 import Link from "next/link";
 import { prisma } from "@/lib/prisma";
-import { PageHeader, StatusBadge } from "@/components/PageHeader";
-import { TeamFlag } from "@/components/TeamFlag";
-import { MatchVenue } from "@/components/MatchVenue";
-import { dayKey, formatDay, formatMatchMeta, formatTime } from "@/lib/format";
+import { PageHeader } from "@/components/PageHeader";
+import { JogosByDay, type JogosDay } from "@/components/JogosByDay";
+import { dayKey, formatDay } from "@/lib/format";
 import { getCurrentUser } from "@/lib/auth";
 import { getPoolMatchFilter } from "@/lib/settings";
+import { hasLivePoolMatches } from "@/lib/live-matches";
 import { AutoRefresh } from "@/components/AutoRefresh";
 
-export const revalidate = 30;
+export const revalidate = 15;
 
 export default async function JogosPage() {
-  const [user, poolFilter] = await Promise.all([
+  const [user, poolFilter, live] = await Promise.all([
     getCurrentUser(),
     getPoolMatchFilter(),
+    hasLivePoolMatches(),
   ]);
 
   const [matches, myPredictions] = await Promise.all([
@@ -34,15 +35,45 @@ export default async function JogosPage() {
     list.push(m);
     byDay.set(key, list);
   }
-  const days = Array.from(byDay.entries()).map(([key, dayMatches]) => ({
-    key,
-    label: formatDay(dayMatches[0].kickoff),
-    matches: dayMatches,
-  }));
+  const days: JogosDay[] = Array.from(byDay.entries()).map(
+    ([key, dayMatches]) => ({
+      key,
+      label: formatDay(dayMatches[0].kickoff),
+      matches: dayMatches.map((m) => {
+        const pred = predByMatch.get(m.id);
+        return {
+          id: m.id,
+          kickoff: m.kickoff.toISOString(),
+          stage: m.stage,
+          groupName: m.groupName,
+          competition: m.competition,
+          venue: m.venue,
+          homeTeam: m.homeTeam,
+          awayTeam: m.awayTeam,
+          homeCrest: m.homeCrest,
+          awayCrest: m.awayCrest,
+          status: m.status,
+          homeScore: m.homeScore,
+          awayScore: m.awayScore,
+          started:
+            new Date(m.kickoff).getTime() <= Date.now() ||
+            m.status !== "SCHEDULED",
+          prediction: pred
+            ? {
+                homeScore: pred.homeScore,
+                awayScore: pred.awayScore,
+                scored: pred.scored,
+                points: pred.points,
+              }
+            : null,
+        };
+      }),
+    })
+  );
 
   return (
     <div>
-      <AutoRefresh intervalMs={90000} />
+      <AutoRefresh live={live} />
       <PageHeader
         title="Jogos da Copa"
         subtitle="Acompanhe os jogos, resultados e dê seus palpites antes do apito inicial."
@@ -59,91 +90,7 @@ export default async function JogosPage() {
             jogos no painel administrativo.
           </div>
         ) : (
-          <div className="space-y-10">
-            {days.map((day) => (
-              <section key={day.key}>
-                <h2 className="mb-4 flex items-center gap-3 font-display text-xl font-bold text-brand-900">
-                  <span className="h-2 w-2 rounded-full bg-accent-500" />
-                  {day.label}
-                  <span className="text-sm font-normal text-slate-400">
-                    ({day.matches.length}{" "}
-                    {day.matches.length === 1 ? "jogo" : "jogos"})
-                  </span>
-                </h2>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {day.matches.map((m) => {
-                    const started =
-                      new Date(m.kickoff).getTime() <= Date.now() ||
-                      m.status !== "SCHEDULED";
-                    const pred = predByMatch.get(m.id);
-                    return (
-                      <div key={m.id} className="card p-5">
-                        <div className="flex items-center justify-between text-xs text-slate-400">
-                          <span>
-                            {formatMatchMeta(m.stage, m.groupName, m.competition)}
-                          </span>
-                          <StatusBadge status={m.status} />
-                        </div>
-
-                        {m.venue && (
-                          <div className="mt-2">
-                            <MatchVenue venue={m.venue} />
-                          </div>
-                        )}
-
-                        <div className="mt-4 flex items-center gap-3">
-                          <TeamFlag name={m.homeTeam} crest={m.homeCrest} />
-                          <div className="flex min-w-[64px] items-center justify-center">
-                            {m.status === "FINISHED" || m.status === "LIVE" ? (
-                              <span className="font-display text-xl font-extrabold text-slate-900">
-                                {m.homeScore ?? 0}{" "}
-                                <span className="text-slate-300">×</span>{" "}
-                                {m.awayScore ?? 0}
-                              </span>
-                            ) : (
-                              <span className="text-slate-300">×</span>
-                            )}
-                          </div>
-                          <TeamFlag
-                            name={m.awayTeam}
-                            crest={m.awayCrest}
-                            align="right"
-                          />
-                        </div>
-
-                        <div className="mt-4 flex items-center justify-between border-t border-slate-100 pt-3 text-sm">
-                          <span className="font-medium text-slate-600">
-                            {formatTime(m.kickoff)}
-                          </span>
-                          {pred ? (
-                            <span className="badge bg-brand-50 text-brand-700">
-                              Seu palpite: {pred.homeScore}×{pred.awayScore}
-                              {pred.scored && pred.points !== null && (
-                                <span className="ml-1 font-bold">
-                                  (+{pred.points})
-                                </span>
-                              )}
-                            </span>
-                          ) : started ? (
-                            <span className="text-xs text-slate-400">
-                              Palpites encerrados
-                            </span>
-                          ) : (
-                            <Link
-                              href="/palpites"
-                              className="text-xs font-semibold text-brand-600 hover:text-brand-700"
-                            >
-                              Palpitar →
-                            </Link>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-            ))}
-          </div>
+          <JogosByDay days={days} />
         )}
       </div>
     </div>

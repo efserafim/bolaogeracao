@@ -2,13 +2,26 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
+import {
+  REFRESH_INTERVAL_MS,
+  REFRESH_LIVE_INTERVAL_MS,
+} from "@/lib/constants";
 
 /**
  * Atualiza os dados da pagina periodicamente (revalida o Server Component
  * via router.refresh), dando sensacao de "tempo real" sem recarregar a pagina.
  */
-export function AutoRefresh({ intervalMs = 90000 }: { intervalMs?: number }) {
+export function AutoRefresh({
+  intervalMs = REFRESH_INTERVAL_MS,
+  liveIntervalMs = REFRESH_LIVE_INTERVAL_MS,
+  live = false,
+}: {
+  intervalMs?: number;
+  liveIntervalMs?: number;
+  live?: boolean;
+}) {
   const router = useRouter();
+  const ms = live ? liveIntervalMs : intervalMs;
 
   useEffect(() => {
     const refresh = () => {
@@ -17,7 +30,7 @@ export function AutoRefresh({ intervalMs = 90000 }: { intervalMs?: number }) {
       }
     };
 
-    const id = setInterval(refresh, intervalMs);
+    const id = setInterval(refresh, ms);
 
     const onVisible = () => {
       if (document.visibilityState === "visible") {
@@ -30,7 +43,7 @@ export function AutoRefresh({ intervalMs = 90000 }: { intervalMs?: number }) {
       clearInterval(id);
       document.removeEventListener("visibilitychange", onVisible);
     };
-  }, [router, intervalMs]);
+  }, [router, ms]);
 
   return null;
 }

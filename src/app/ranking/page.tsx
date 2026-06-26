@@ -3,20 +3,25 @@ import { getCurrentUser } from "@/lib/auth";
 import { PageHeader } from "@/components/PageHeader";
 import { RankingParticipant } from "@/components/RankingParticipant";
 import { AutoRefresh } from "@/components/AutoRefresh";
+import { hasLivePoolMatches } from "@/lib/live-matches";
 
-export const revalidate = 30;
+export const revalidate = 15;
 
 const medals: Record<number, string> = { 1: "🥇", 2: "🥈", 3: "🥉" };
 
 export default async function RankingPage() {
-  const [ranking, me] = await Promise.all([getRanking(), getCurrentUser()]);
+  const [ranking, me, live] = await Promise.all([
+    getRanking(),
+    getCurrentUser(),
+    hasLivePoolMatches(),
+  ]);
   const isLoggedIn = !!me;
 
   const podium = ranking.slice(0, 3);
 
   return (
     <div>
-      <AutoRefresh intervalMs={90000} />
+      <AutoRefresh live={live} />
       <PageHeader
         title="Ranking Geral"
         subtitle={
@@ -79,7 +84,7 @@ export default async function RankingPage() {
                     key={r.userId}
                     className={`card min-w-0 p-4 ${isMe ? "ring-2 ring-brand-200" : ""}`}
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex min-w-0 items-center gap-3 overflow-hidden">
                       <span className="w-7 shrink-0 text-center font-display text-lg font-bold text-slate-400">
                         {medals[r.position] ?? r.position}
                       </span>
@@ -107,15 +112,15 @@ export default async function RankingPage() {
               })}
             </div>
 
-            <div className="card hidden overflow-x-auto sm:block">
-              <table className="w-full text-sm">
+            <div className="card hidden overflow-hidden sm:block">
+              <table className="w-full table-fixed text-sm">
                 <thead className="bg-slate-50 text-left text-xs uppercase tracking-wide text-slate-400">
                   <tr>
-                    <th className="px-4 py-3">#</th>
+                    <th className="w-12 px-4 py-3">#</th>
                     <th className="px-4 py-3">Participante</th>
-                    <th className="px-4 py-3 text-center">Palpites</th>
-                    <th className="px-4 py-3 text-center">Exatos</th>
-                    <th className="px-4 py-3 text-right">Pontos</th>
+                    <th className="w-24 px-4 py-3 text-center">Palpites</th>
+                    <th className="w-20 px-4 py-3 text-center">Exatos</th>
+                    <th className="w-20 px-4 py-3 text-right">Pontos</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -129,7 +134,7 @@ export default async function RankingPage() {
                         <td className="px-4 py-3 font-display font-bold text-slate-500">
                           {medals[r.position] ?? r.position}
                         </td>
-                        <td className="px-4 py-3">
+                        <td className="max-w-0 px-4 py-3">
                           <RankingParticipant
                             userId={r.userId}
                             name={r.name}
@@ -137,6 +142,7 @@ export default async function RankingPage() {
                             avatarSize={34}
                             isMe={isMe}
                             isLoggedIn={isLoggedIn}
+                            className="w-full"
                           />
                         </td>
                         <td className="px-4 py-3 text-center text-slate-500">

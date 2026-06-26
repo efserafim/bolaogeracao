@@ -40,6 +40,11 @@ export function dayKey(date: Date | string) {
   });
 }
 
+/** True se a chave de dia for hoje ou uma data futura (fuso de Brasilia). */
+export function isTodayOrFutureDay(key: string) {
+  return key >= dayKey(new Date());
+}
+
 export function initials(name: string) {
   return name
     .split(" ")

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { TeamFlag } from "./TeamFlag";
 import { MatchVenue } from "./MatchVenue";
+import { CollapsibleDaySection } from "./CollapsibleDaySection";
 import { dayKey, formatDay, formatMatchMeta, formatTime } from "@/lib/format";
 
 export interface BoardMatch {
@@ -222,29 +223,30 @@ function groupByDay(list: BoardMatch[]) {
 }
 
 function DaySection({
+  dayKey: key,
   label,
   matches,
   predictionsOpen,
 }: {
+  dayKey: string;
   label: string;
   matches: BoardMatch[];
   predictionsOpen: boolean;
 }) {
   return (
-    <section>
-      <h3 className="mb-4 flex items-center gap-3 font-display text-lg font-bold text-brand-900">
-        <span className="h-2 w-2 rounded-full bg-accent-500" />
-        {label}
-        <span className="text-sm font-normal text-slate-400">
-          ({matches.length} {matches.length === 1 ? "jogo" : "jogos"})
-        </span>
-      </h3>
+    <CollapsibleDaySection
+      dayKey={key}
+      label={label}
+      matchCount={matches.length}
+      headingLevel="h3"
+      headingClassName="font-display text-lg font-bold text-brand-900"
+    >
       <div className="grid gap-4 sm:grid-cols-2">
         {matches.map((m) => (
           <MatchRow key={m.id} match={m} predictionsOpen={predictionsOpen} />
         ))}
       </div>
-    </section>
+    </CollapsibleDaySection>
   );
 }
 
@@ -273,6 +275,7 @@ export function PredictionsBoard({
       {openDays.map((day) => (
         <DaySection
           key={day.key}
+          dayKey={day.key}
           label={day.label}
           matches={day.matches}
           predictionsOpen={predictionsOpen}
@@ -288,6 +291,7 @@ export function PredictionsBoard({
             {closedDays.map((day) => (
               <DaySection
                 key={day.key}
+                dayKey={day.key}
                 label={day.label}
                 matches={day.matches}
                 predictionsOpen={predictionsOpen}

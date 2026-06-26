@@ -23,6 +23,44 @@ function mapStatus(status: string): ProviderMatchStatus {
   }
 }
 
+type ScoreBlock = {
+  home?: number | null;
+  away?: number | null;
+  homeTeam?: number | null;
+  awayTeam?: number | null;
+} | null | undefined;
+
+function readScoreBlock(block: ScoreBlock): {
+  homeScore: number | null;
+  awayScore: number | null;
+} | null {
+  if (!block) return null;
+  const home = block.home ?? block.homeTeam ?? null;
+  const away = block.away ?? block.awayTeam ?? null;
+  if (home === null && away === null) return null;
+  return { homeScore: home ?? 0, awayScore: away ?? 0 };
+}
+
+/** Placar atual: regularTime durante o jogo; fullTime ao encerrar. */
+function extractScores(
+  score: Record<string, ScoreBlock> | null | undefined,
+  status: ProviderMatchStatus
+) {
+  if (!score) return { homeScore: null, awayScore: null };
+
+  const blocks =
+    status === "FINISHED"
+      ? [score.fullTime, score.regularTime, score.halfTime]
+      : [score.regularTime, score.fullTime, score.halfTime, score.extraTime];
+
+  for (const block of blocks) {
+    const parsed = readScoreBlock(block);
+    if (parsed) return parsed;
+  }
+
+  return { homeScore: null, awayScore: null };
+}
+
 export class FootballDataProvider implements FootballProvider {
   name = "api";
   private token: string;
@@ -51,7 +89,10 @@ export class FootballDataProvider implements FootballProvider {
       `/competitions/${this.competition}/matches`
     );
     const matches: any[] = data.matches ?? [];
-    return matches.map((m) => ({
+    return matches.map((m) => {
+      const status = mapStatus(m.status);
+      const { homeScore, awayScore } = extractScores(m.score, status);
+      return {
       externalId: String(m.id),
       competition: data.competition?.name ?? "Copa do Mundo",
       stage: m.stage ?? null,
@@ -62,10 +103,11 @@ export class FootballDataProvider implements FootballProvider {
       awayCrest: m.awayTeam?.crest ?? null,
       venue: m.venue ?? null,
       kickoff: m.utcDate,
-      status: mapStatus(m.status),
-      homeScore: m.score?.fullTime?.home ?? null,
-      awayScore: m.score?.fullTime?.away ?? null,
-    }));
+      status,
+      homeScore,
+      awayScore,
+    };
+    });
   }
 
   async getStandings(): Promise<ProviderStanding[]> {
