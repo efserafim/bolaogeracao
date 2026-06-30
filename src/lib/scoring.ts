@@ -8,7 +8,7 @@ export type PenaltyWinner = "HOME" | "AWAY";
 
 const PENALTY_WINNER_BONUS = 2;
 const PENALTY_REWARD_BONUS = 2;
-const PENALTY_REWARD_DAY_KEY = "2026-06-29";
+const PENALTY_REWARD_DAY_KEYS = new Set(["2026-06-29", "2026-06-30"]);
 
 export const DEFAULT_RULES: ScoreRules = {
   pointsExact: 5,
@@ -31,7 +31,7 @@ function dayKey(date: Date | string) {
 }
 
 function isYesterdayPenaltyRewardMatch(kickoff?: Date | string | null) {
-  return kickoff ? dayKey(kickoff) === PENALTY_REWARD_DAY_KEY : false;
+  return kickoff ? PENALTY_REWARD_DAY_KEYS.has(dayKey(kickoff)) : false;
 }
 
 function calculateBasePoints(
