@@ -18,6 +18,7 @@ export interface ProviderMatch {
   status: ProviderMatchStatus;
   homeScore: number | null;
   awayScore: number | null;
+  penaltyWinner?: "HOME" | "AWAY" | null;
 }
 
 export interface ProviderStanding {

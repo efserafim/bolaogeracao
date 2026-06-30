@@ -49,9 +49,15 @@ export async function GET(
       const result = {
         homeScore: p.match.homeScore as number,
         awayScore: p.match.awayScore as number,
+        penaltyWinner: p.match.penaltyWinner,
+        kickoff: p.match.kickoff,
       };
       const { points, reason } = describePoints(
-        { homeScore: p.homeScore, awayScore: p.awayScore },
+        {
+          homeScore: p.homeScore,
+          awayScore: p.awayScore,
+          penaltyGuess: p.penaltyGuess,
+        },
         result,
         rules
       );
@@ -79,6 +85,7 @@ export async function GET(
       id: p.id,
       homeScore: p.homeScore,
       awayScore: p.awayScore,
+      penaltyGuess: p.penaltyGuess,
       points: p.points,
       scored: p.scored,
       match: {
@@ -89,6 +96,7 @@ export async function GET(
         awayCrest: p.match.awayCrest,
         homeScore: p.match.homeScore,
         awayScore: p.match.awayScore,
+        penaltyWinner: p.match.penaltyWinner,
         status: p.match.status,
         kickoff: p.match.kickoff.toISOString(),
         venue: p.match.venue,

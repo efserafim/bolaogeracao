@@ -4,6 +4,12 @@ export type ScoreRules = {
   pointsGoalDiff: number;
 };
 
+export type PenaltyWinner = "HOME" | "AWAY";
+
+const PENALTY_WINNER_BONUS = 2;
+const PENALTY_REWARD_BONUS = 2;
+const PENALTY_REWARD_DAY_KEY = "2026-06-29";
+
 export const DEFAULT_RULES: ScoreRules = {
   pointsExact: 5,
   pointsResult: 3,
@@ -18,11 +24,21 @@ function outcome(home: number, away: number): Outcome {
   return "DRAW";
 }
 
-export function calculatePoints(
+function dayKey(date: Date | string) {
+  return new Date(date).toLocaleDateString("en-CA", {
+    timeZone: "America/Sao_Paulo",
+  });
+}
+
+function isYesterdayPenaltyRewardMatch(kickoff?: Date | string | null) {
+  return kickoff ? dayKey(kickoff) === PENALTY_REWARD_DAY_KEY : false;
+}
+
+function calculateBasePoints(
   prediction: { homeScore: number; awayScore: number },
   result: { homeScore: number; awayScore: number },
-  rules: ScoreRules = DEFAULT_RULES
-): number {
+  rules: ScoreRules
+) {
   if (
     prediction.homeScore === result.homeScore &&
     prediction.awayScore === result.awayScore
@@ -48,20 +64,79 @@ export function calculatePoints(
   return 0;
 }
 
+function calculatePenaltyBonus(
+  prediction: { penaltyGuess?: PenaltyWinner | string | null },
+  result: {
+    penaltyWinner?: PenaltyWinner | string | null;
+    kickoff?: Date | string | null;
+  }
+) {
+  if (!result.penaltyWinner) return 0;
+
+  let bonus = 0;
+  if (prediction.penaltyGuess === result.penaltyWinner) {
+    bonus += PENALTY_WINNER_BONUS;
+  }
+  if (isYesterdayPenaltyRewardMatch(result.kickoff)) {
+    bonus += PENALTY_REWARD_BONUS;
+  }
+  return bonus;
+}
+
+export function calculatePoints(
+  prediction: {
+    homeScore: number;
+    awayScore: number;
+    penaltyGuess?: PenaltyWinner | string | null;
+  },
+  result: {
+    homeScore: number;
+    awayScore: number;
+    penaltyWinner?: PenaltyWinner | string | null;
+    kickoff?: Date | string | null;
+  },
+  rules: ScoreRules = DEFAULT_RULES
+): number {
+  return (
+    calculateBasePoints(prediction, result, rules) +
+    calculatePenaltyBonus(prediction, result)
+  );
+}
+
 export function describePoints(
-  prediction: { homeScore: number; awayScore: number },
-  result: { homeScore: number; awayScore: number },
+  prediction: {
+    homeScore: number;
+    awayScore: number;
+    penaltyGuess?: PenaltyWinner | string | null;
+  },
+  result: {
+    homeScore: number;
+    awayScore: number;
+    penaltyWinner?: PenaltyWinner | string | null;
+    kickoff?: Date | string | null;
+  },
   rules: ScoreRules = DEFAULT_RULES
 ): { points: number; reason: string } {
   const points = calculatePoints(prediction, result, rules);
-  if (points === rules.pointsExact) {
-    return { points, reason: "Placar exato" };
+  const basePoints = calculateBasePoints(prediction, result, rules);
+
+  const reasons: string[] = [];
+  if (basePoints === rules.pointsExact) {
+    reasons.push("Placar exato");
+  } else if (basePoints === rules.pointsResult) {
+    reasons.push("Acertou o resultado");
+  } else if (basePoints === rules.pointsGoalDiff) {
+    reasons.push("Acertou o saldo de gols");
+  } else {
+    reasons.push("Errou o palpite");
   }
-  if (points === rules.pointsResult) {
-    return { points, reason: "Acertou o resultado" };
+
+  if (result.penaltyWinner && prediction.penaltyGuess === result.penaltyWinner) {
+    reasons.push("+2 vencedor nos penaltis");
   }
-  if (points === rules.pointsGoalDiff) {
-    return { points, reason: "Acertou o saldo de gols" };
+  if (result.penaltyWinner && isYesterdayPenaltyRewardMatch(result.kickoff)) {
+    reasons.push("+2 recompensa penaltis de ontem");
   }
-  return { points, reason: "Errou o palpite" };
+
+  return { points, reason: reasons.join(" · ") };
 }

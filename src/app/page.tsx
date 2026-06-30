@@ -116,6 +116,29 @@ export default async function HomePage() {
         </div>
       </section>
 
+      <section className="container-app pt-10">
+        <div className="rounded-3xl border border-amber-200 bg-amber-50 p-5 shadow-sm">
+          <p className="text-xs font-semibold uppercase tracking-wide text-amber-700">
+            Nota de atualização
+          </p>
+          <h2 className="mt-2 font-display text-xl font-extrabold text-amber-950">
+            Atualização nos jogos decididos por pênaltis
+          </h2>
+          <p className="mt-2 text-sm leading-6 text-amber-900">
+            A pontuação dos jogos a partir dos 32 avos agora considera apenas o
+            placar até o fim da prorrogação; os gols da disputa de pênaltis não
+            entram mais no placar final. Também foi adicionada uma opção para
+            escolher quem vence caso o jogo vá para os pênaltis: quem acertar
+            ganha +2 pontos.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-amber-900">
+            Como a regra foi atualizada hoje, os jogos de ontem que terminaram
+            nos pênaltis recebem uma recompensa extra de +2 pontos para cada
+            palpite registrado nessa partida.
+          </p>
+        </div>
+      </section>
+
       <section className="container-app py-14">
         <h2 className="text-center font-display text-3xl font-extrabold text-brand-900">
           Como funciona
@@ -177,6 +200,14 @@ export default async function HomePage() {
               </span>
               <span className="badge bg-brand-400 text-white">
                 {settings.pointsGoalDiff} pt
+              </span>
+            </li>
+            <li className="flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
+              <span className="font-medium text-slate-700">
+                🥅 Acertou vencedor nos pênaltis
+              </span>
+              <span className="badge bg-brand-300 text-white">
+                +2 pts
               </span>
             </li>
           </ul>

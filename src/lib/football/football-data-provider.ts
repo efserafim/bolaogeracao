@@ -11,6 +11,8 @@ function mapStatus(status: string): ProviderMatchStatus {
   switch (status) {
     case "IN_PLAY":
     case "PAUSED":
+    case "EXTRA_TIME":
+    case "PENALTY_SHOOTOUT":
       return "LIVE";
     case "FINISHED":
       return "FINISHED";
@@ -30,6 +32,16 @@ type ScoreBlock = {
   awayTeam?: number | null;
 } | null | undefined;
 
+type ScorePayload = {
+  duration?: string | null;
+  winner?: string | null;
+  fullTime?: ScoreBlock;
+  regularTime?: ScoreBlock;
+  extraTime?: ScoreBlock;
+  halfTime?: ScoreBlock;
+  penalties?: ScoreBlock;
+} | null | undefined;
+
 function readScoreBlock(block: ScoreBlock): {
   homeScore: number | null;
   awayScore: number | null;
@@ -41,12 +53,74 @@ function readScoreBlock(block: ScoreBlock): {
   return { homeScore: home ?? 0, awayScore: away ?? 0 };
 }
 
-/** Placar atual: regularTime durante o jogo; fullTime ao encerrar. */
+type ParsedScore = NonNullable<ReturnType<typeof readScoreBlock>>;
+
+function addScores(a: ParsedScore | null, b: ParsedScore | null) {
+  if (!a && !b) return null;
+  return {
+    homeScore: (a?.homeScore ?? 0) + (b?.homeScore ?? 0),
+    awayScore: (a?.awayScore ?? 0) + (b?.awayScore ?? 0),
+  };
+}
+
+function subtractScores(a: ParsedScore | null, b: ParsedScore | null) {
+  if (!a) return null;
+  return {
+    homeScore: a.homeScore - (b?.homeScore ?? 0),
+    awayScore: a.awayScore - (b?.awayScore ?? 0),
+  };
+}
+
+function scoreBeforePenalties(score: ScorePayload) {
+  const regularTime = readScoreBlock(score?.regularTime);
+  const extraTime = readScoreBlock(score?.extraTime);
+  if (regularTime) return addScores(regularTime, extraTime);
+
+  return subtractScores(
+    readScoreBlock(score?.fullTime),
+    readScoreBlock(score?.penalties)
+  );
+}
+
+function mapWinner(winner: string | null | undefined) {
+  if (winner === "HOME_TEAM") return "HOME" as const;
+  if (winner === "AWAY_TEAM") return "AWAY" as const;
+  return null;
+}
+
+function extractPenaltyWinner(score: ScorePayload) {
+  const penalties = readScoreBlock(score?.penalties);
+  const endedInPenalties =
+    score?.duration === "PENALTY_SHOOTOUT" || penalties !== null;
+
+  if (!endedInPenalties) return null;
+  if (penalties && penalties.homeScore !== penalties.awayScore) {
+    return penalties.homeScore > penalties.awayScore ? "HOME" : "AWAY";
+  }
+
+  return mapWinner(score?.winner);
+}
+
+/** Placar atual: regularTime durante o jogo; final sem contar disputa de penaltis. */
 function extractScores(
-  score: Record<string, ScoreBlock> | null | undefined,
+  score: ScorePayload,
   status: ProviderMatchStatus
 ) {
   if (!score) return { homeScore: null, awayScore: null };
+
+  if (
+    score.duration === "EXTRA_TIME" ||
+    score.duration === "PENALTY_SHOOTOUT" ||
+    readScoreBlock(score.penalties)
+  ) {
+    const parsed = scoreBeforePenalties(score);
+    if (parsed) return parsed;
+  }
+
+  if (status === "FINISHED") {
+    const parsed = scoreBeforePenalties(score);
+    if (parsed) return parsed;
+  }
 
   const blocks =
     status === "FINISHED"
@@ -92,21 +166,23 @@ export class FootballDataProvider implements FootballProvider {
     return matches.map((m) => {
       const status = mapStatus(m.status);
       const { homeScore, awayScore } = extractScores(m.score, status);
+      const penaltyWinner = extractPenaltyWinner(m.score);
       return {
-      externalId: String(m.id),
-      competition: data.competition?.name ?? "Copa do Mundo",
-      stage: m.stage ?? null,
-      groupName: m.group ?? null,
-      homeTeam: m.homeTeam?.name ?? "A definir",
-      awayTeam: m.awayTeam?.name ?? "A definir",
-      homeCrest: m.homeTeam?.crest ?? null,
-      awayCrest: m.awayTeam?.crest ?? null,
-      venue: m.venue ?? null,
-      kickoff: m.utcDate,
-      status,
-      homeScore,
-      awayScore,
-    };
+        externalId: String(m.id),
+        competition: data.competition?.name ?? "Copa do Mundo",
+        stage: m.stage ?? null,
+        groupName: m.group ?? null,
+        homeTeam: m.homeTeam?.name ?? "A definir",
+        awayTeam: m.awayTeam?.name ?? "A definir",
+        homeCrest: m.homeTeam?.crest ?? null,
+        awayCrest: m.awayTeam?.crest ?? null,
+        venue: m.venue ?? null,
+        kickoff: m.utcDate,
+        status,
+        homeScore,
+        awayScore,
+        penaltyWinner,
+      };
     });
   }
 

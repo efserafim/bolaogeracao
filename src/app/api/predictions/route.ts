@@ -9,6 +9,7 @@ const schema = z.object({
   matchId: z.string().min(1),
   homeScore: z.number().int().min(0).max(30),
   awayScore: z.number().int().min(0).max(30),
+  penaltyGuess: z.enum(["HOME", "AWAY"]).nullable().optional(),
 });
 
 export async function POST(req: Request) {
@@ -26,7 +27,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const { matchId, homeScore, awayScore } = parsed.data;
+  const { matchId, homeScore, awayScore, penaltyGuess } = parsed.data;
 
   const settings = await getSettings();
   if (!settings.predictionsOpen) {
@@ -59,8 +60,8 @@ export async function POST(req: Request) {
 
   const prediction = await prisma.prediction.upsert({
     where: { userId_matchId: { userId: user.id, matchId } },
-    create: { userId: user.id, matchId, homeScore, awayScore },
-    update: { homeScore, awayScore },
+    create: { userId: user.id, matchId, homeScore, awayScore, penaltyGuess },
+    update: { homeScore, awayScore, penaltyGuess },
   });
 
   return NextResponse.json({ ok: true, prediction });

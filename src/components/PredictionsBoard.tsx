@@ -18,6 +18,7 @@ export interface BoardMatch {
   venue: string | null;
   homeGuess: number | null;
   awayGuess: number | null;
+  penaltyGuess: "HOME" | "AWAY" | null;
   locked?: boolean;
 }
 
@@ -79,6 +80,9 @@ function MatchRow({
   const locked = match.locked ?? false;
   const [home, setHome] = useState(match.homeGuess ?? 0);
   const [away, setAway] = useState(match.awayGuess ?? 0);
+  const [penaltyGuess, setPenaltyGuess] = useState<"HOME" | "AWAY" | null>(
+    match.penaltyGuess
+  );
   const [saved, setSaved] = useState(
     match.homeGuess !== null && match.awayGuess !== null
   );
@@ -98,6 +102,7 @@ function MatchRow({
         matchId: match.id,
         homeScore: home,
         awayScore: away,
+        penaltyGuess,
       }),
     });
     const data = await res.json();
@@ -175,6 +180,35 @@ function MatchRow({
           disabled={!canEdit}
         />
         <TeamFlag name={match.awayTeam} crest={match.awayCrest} align="right" />
+      </div>
+
+      <div className="mt-4 rounded-xl border border-dashed border-slate-200 bg-slate-50 p-3">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-400">
+          Se for para os penaltis (+2 pts)
+        </p>
+        <div className="mt-2 flex flex-col gap-2 sm:flex-row">
+          {[
+            { value: "HOME" as const, label: match.homeTeam },
+            { value: "AWAY" as const, label: match.awayTeam },
+          ].map((option) => (
+            <button
+              key={option.value}
+              type="button"
+              disabled={!canEdit}
+              onClick={() => {
+                setPenaltyGuess(option.value);
+                setSaved(false);
+              }}
+              className={`rounded-lg px-3 py-2 text-sm font-semibold transition ${
+                penaltyGuess === option.value
+                  ? "bg-brand-600 text-white"
+                  : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"
+              } ${!canEdit ? "cursor-not-allowed opacity-70" : ""}`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
       </div>
 
       <div className="mt-4 flex flex-col gap-3 border-t border-slate-100 pt-3 sm:flex-row sm:items-center sm:justify-between">

@@ -16,6 +16,7 @@ type PredictionMatch = {
   awayCrest: string | null;
   homeScore: number | null;
   awayScore: number | null;
+  penaltyWinner: string | null;
   status: string;
   kickoff: string;
   venue: string | null;
@@ -25,6 +26,7 @@ type Prediction = {
   id: string;
   homeScore: number;
   awayScore: number;
+  penaltyGuess: string | null;
   points: number | null;
   scored: boolean;
   match: PredictionMatch;
@@ -128,6 +130,18 @@ function ScoreBreakdown({
 function PredictionRow({ p }: { p: Prediction }) {
   const m = p.match;
   const finished = m.status === "FINISHED";
+  const penaltyGuess =
+    p.penaltyGuess === "HOME"
+      ? m.homeTeam
+      : p.penaltyGuess === "AWAY"
+        ? m.awayTeam
+        : null;
+  const penaltyWinner =
+    m.penaltyWinner === "HOME"
+      ? m.homeTeam
+      : m.penaltyWinner === "AWAY"
+        ? m.awayTeam
+        : null;
 
   return (
     <div className="flex flex-col gap-3 rounded-xl border border-slate-100 bg-slate-50/80 p-4 sm:flex-row sm:items-center">
@@ -150,12 +164,22 @@ function PredictionRow({ p }: { p: Prediction }) {
           <p className="font-display font-bold text-slate-800">
             {p.homeScore}×{p.awayScore}
           </p>
+          {penaltyGuess && (
+            <p className="mt-1 text-[11px] text-slate-400">
+              Pen.: {penaltyGuess}
+            </p>
+          )}
         </div>
         <div className="text-center">
           <p className="text-[11px] uppercase text-slate-400">Resultado</p>
           <p className="font-display font-bold text-slate-800">
             {finished ? `${m.homeScore}×${m.awayScore}` : "—"}
           </p>
+          {finished && penaltyWinner && (
+            <p className="mt-1 text-[11px] text-slate-400">
+              Pen.: {penaltyWinner}
+            </p>
+          )}
         </div>
         <div className="min-w-[80px] text-center">
           {p.scored ? (

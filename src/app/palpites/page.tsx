@@ -47,6 +47,9 @@ export default async function PalpitesPage() {
       venue: m.venue,
       homeGuess: pred?.homeScore ?? null,
       awayGuess: pred?.awayScore ?? null,
+      penaltyGuess: pred?.penaltyGuess === "HOME" || pred?.penaltyGuess === "AWAY"
+        ? pred.penaltyGuess
+        : null,
       locked,
     };
   });

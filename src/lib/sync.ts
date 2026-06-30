@@ -49,6 +49,7 @@ async function bulkUpsertMatches(matches: ProviderMatch[]) {
           ${Prisma.raw(`'${m.status}'::"MatchStatus"`)},
           ${m.homeScore},
           ${m.awayScore},
+          ${m.penaltyWinner ?? null},
           NOW(),
           NOW()
         )`
@@ -58,7 +59,7 @@ async function bulkUpsertMatches(matches: ProviderMatch[]) {
       INSERT INTO "Match" (
         "id", "externalId", "competition", "stage", "groupName",
         "homeTeam", "awayTeam", "homeCrest", "awayCrest", "venue", "kickoff",
-        "status", "homeScore", "awayScore", "createdAt", "updatedAt"
+        "status", "homeScore", "awayScore", "penaltyWinner", "createdAt", "updatedAt"
       )
       VALUES ${Prisma.join(rows)}
       ON CONFLICT ("externalId") DO UPDATE SET
@@ -74,6 +75,7 @@ async function bulkUpsertMatches(matches: ProviderMatch[]) {
         "status" = EXCLUDED."status",
         "homeScore" = CASE WHEN "Match"."scoreLocked" THEN "Match"."homeScore" ELSE EXCLUDED."homeScore" END,
         "awayScore" = CASE WHEN "Match"."scoreLocked" THEN "Match"."awayScore" ELSE EXCLUDED."awayScore" END,
+        "penaltyWinner" = EXCLUDED."penaltyWinner",
         "updatedAt" = NOW()
     `;
   }
@@ -209,10 +211,16 @@ export async function rescoreAllFinishedMatches() {
     const result = {
       homeScore: match.homeScore as number,
       awayScore: match.awayScore as number,
+      penaltyWinner: match.penaltyWinner,
+      kickoff: match.kickoff,
     };
     for (const p of match.predictions) {
       const points = calculatePoints(
-        { homeScore: p.homeScore, awayScore: p.awayScore },
+        {
+          homeScore: p.homeScore,
+          awayScore: p.awayScore,
+          penaltyGuess: p.penaltyGuess,
+        },
         result,
         rules
       );
