@@ -66,8 +66,8 @@ function addScores(a: ParsedScore | null, b: ParsedScore | null) {
 function subtractScores(a: ParsedScore | null, b: ParsedScore | null) {
   if (!a) return null;
   return {
-    homeScore: a.homeScore - (b?.homeScore ?? 0),
-    awayScore: a.awayScore - (b?.awayScore ?? 0),
+    homeScore: (a.homeScore ?? 0) - (b?.homeScore ?? 0),
+    awayScore: (a.awayScore ?? 0) - (b?.awayScore ?? 0),
   };
 }
 
@@ -94,8 +94,10 @@ function extractPenaltyWinner(score: ScorePayload) {
     score?.duration === "PENALTY_SHOOTOUT" || penalties !== null;
 
   if (!endedInPenalties) return null;
-  if (penalties && penalties.homeScore !== penalties.awayScore) {
-    return penalties.homeScore > penalties.awayScore ? "HOME" : "AWAY";
+  if (penalties) {
+    const home = penalties.homeScore ?? 0;
+    const away = penalties.awayScore ?? 0;
+    if (home !== away) return home > away ? "HOME" : "AWAY";
   }
 
   return mapWinner(score?.winner);
