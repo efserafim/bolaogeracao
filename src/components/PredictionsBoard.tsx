@@ -5,6 +5,7 @@ import { TeamFlag } from "./TeamFlag";
 import { MatchVenue } from "./MatchVenue";
 import { CollapsibleDaySection } from "./CollapsibleDaySection";
 import { dayKey, formatDay, formatMatchMeta, formatTime } from "@/lib/format";
+import { teamDisplayName } from "@/lib/teams";
 
 export interface BoardMatch {
   id: string;
@@ -205,7 +206,7 @@ function MatchRow({
                   : "bg-white text-slate-600 ring-1 ring-slate-200 hover:bg-slate-100"
               } ${!canEdit ? "cursor-not-allowed opacity-70" : ""}`}
             >
-              {option.label}
+              {teamDisplayName(option.label)}
             </button>
           ))}
         </div>

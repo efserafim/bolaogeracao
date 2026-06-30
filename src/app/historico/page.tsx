@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { PageHeader, StatusBadge } from "@/components/PageHeader";
 import { TeamFlag } from "@/components/TeamFlag";
 import { MatchVenue } from "@/components/MatchVenue";
+import { teamDisplayName } from "@/lib/teams";
 
 export const dynamic = "force-dynamic";
 
@@ -48,15 +49,15 @@ export default async function HistoricoPage() {
               const finished = m.status === "FINISHED";
               const penaltyGuess =
                 p.penaltyGuess === "HOME"
-                  ? m.homeTeam
+                  ? teamDisplayName(m.homeTeam)
                   : p.penaltyGuess === "AWAY"
-                    ? m.awayTeam
+                    ? teamDisplayName(m.awayTeam)
                     : null;
               const penaltyWinner =
                 m.penaltyWinner === "HOME"
-                  ? m.homeTeam
+                  ? teamDisplayName(m.homeTeam)
                   : m.penaltyWinner === "AWAY"
-                    ? m.awayTeam
+                    ? teamDisplayName(m.awayTeam)
                     : null;
               return (
                 <div

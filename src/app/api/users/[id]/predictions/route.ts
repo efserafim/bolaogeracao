@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { dayKey } from "@/lib/format";
 import { describePoints } from "@/lib/scoring";
 import { getRules } from "@/lib/settings";
+import { teamDisplayName } from "@/lib/teams";
 
 export const dynamic = "force-dynamic";
 
@@ -62,7 +63,7 @@ export async function GET(
         rules
       );
       return {
-        matchLabel: `${p.match.homeTeam} × ${p.match.awayTeam}`,
+        matchLabel: `${teamDisplayName(p.match.homeTeam)} × ${teamDisplayName(p.match.awayTeam)}`,
         palpite: `${p.homeScore}×${p.awayScore}`,
         result: `${result.homeScore}×${result.awayScore}`,
         points,

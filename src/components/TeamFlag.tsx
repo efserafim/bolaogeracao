@@ -1,4 +1,4 @@
-import { teamAbbrev } from "@/lib/teams";
+import { teamAbbrev, teamDisplayName } from "@/lib/teams";
 
 export function TeamFlag({
   name,
@@ -11,6 +11,8 @@ export function TeamFlag({
   align?: "left" | "right";
   className?: string;
 }) {
+  const displayName = teamDisplayName(name);
+
   return (
     <div
       className={`flex min-w-0 flex-1 items-center gap-2.5 ${
@@ -20,7 +22,7 @@ export function TeamFlag({
       {crest ? (
         <img
           src={crest}
-          alt={name}
+          alt={displayName}
           className="h-7 w-9 rounded-sm object-cover shadow-sm ring-1 ring-black/5"
         />
       ) : (
@@ -30,7 +32,7 @@ export function TeamFlag({
       )}
       <span
         className="truncate font-display text-sm font-bold tracking-wide text-slate-800 sm:text-base"
-        title={name}
+        title={displayName}
       >
         {teamAbbrev(name)}
       </span>

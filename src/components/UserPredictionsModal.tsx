@@ -7,6 +7,7 @@ import { TeamFlag } from "./TeamFlag";
 import { MatchVenue } from "./MatchVenue";
 import { StatusBadge } from "./PageHeader";
 import { dayKey, formatDay } from "@/lib/format";
+import { teamDisplayName } from "@/lib/teams";
 
 type PredictionMatch = {
   id: string;
@@ -132,15 +133,15 @@ function PredictionRow({ p }: { p: Prediction }) {
   const finished = m.status === "FINISHED";
   const penaltyGuess =
     p.penaltyGuess === "HOME"
-      ? m.homeTeam
+      ? teamDisplayName(m.homeTeam)
       : p.penaltyGuess === "AWAY"
-        ? m.awayTeam
+        ? teamDisplayName(m.awayTeam)
         : null;
   const penaltyWinner =
     m.penaltyWinner === "HOME"
-      ? m.homeTeam
+      ? teamDisplayName(m.homeTeam)
       : m.penaltyWinner === "AWAY"
-        ? m.awayTeam
+        ? teamDisplayName(m.awayTeam)
         : null;
 
   return (

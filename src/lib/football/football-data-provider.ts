@@ -4,6 +4,7 @@ import type {
   ProviderMatchStatus,
   ProviderStanding,
 } from "./types";
+import { teamDisplayName } from "../teams";
 
 const BASE = "https://api.football-data.org/v4";
 
@@ -174,8 +175,8 @@ export class FootballDataProvider implements FootballProvider {
         competition: data.competition?.name ?? "Copa do Mundo",
         stage: m.stage ?? null,
         groupName: m.group ?? null,
-        homeTeam: m.homeTeam?.name ?? "A definir",
-        awayTeam: m.awayTeam?.name ?? "A definir",
+        homeTeam: teamDisplayName(m.homeTeam?.name ?? "A definir"),
+        awayTeam: teamDisplayName(m.awayTeam?.name ?? "A definir"),
         homeCrest: m.homeTeam?.crest ?? null,
         awayCrest: m.awayTeam?.crest ?? null,
         venue: m.venue ?? null,
@@ -200,7 +201,7 @@ export class FootballDataProvider implements FootballProvider {
         result.push({
           competition,
           groupName: block.group ?? null,
-          teamName: row.team?.name ?? "—",
+          teamName: teamDisplayName(row.team?.name ?? "—"),
           crest: row.team?.crest ?? null,
           position: row.position,
           playedGames: row.playedGames ?? 0,
