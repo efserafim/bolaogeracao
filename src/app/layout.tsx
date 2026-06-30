@@ -8,6 +8,7 @@ import { getSettings } from "@/lib/settings";
 import { getBrazilMatchHighlight } from "@/lib/brazil-match";
 import { BrazilCountdown } from "@/components/BrazilCountdown";
 import { GabrielRunner } from "@/components/GabrielRunner";
+import { UpdateNoticeModal } from "@/components/UpdateNoticeModal";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 const poppins = Poppins({
@@ -94,6 +95,7 @@ export default async function RootLayout({
               poolName={settings?.poolName ?? "Bolão da Copa"}
               parishName={settings?.parishName ?? "Grupo Jovem da Paróquia"}
             />
+            <UpdateNoticeModal />
           </div>
         </Providers>
       </body>
