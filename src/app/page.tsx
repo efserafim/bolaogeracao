@@ -196,18 +196,18 @@ export default async function HomePage() {
             </li>
             <li className="flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
               <span className="font-medium text-slate-700">
-                ➗ Acertou só o saldo de gols
-              </span>
-              <span className="badge bg-brand-400 text-white">
-                {settings.pointsGoalDiff} pt
-              </span>
-            </li>
-            <li className="flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
-              <span className="font-medium text-slate-700">
                 🥅 Acertou vencedor nos pênaltis
               </span>
               <span className="badge bg-brand-300 text-white">
                 +2 pts
+              </span>
+            </li>
+            <li className="flex items-center justify-between rounded-xl bg-brand-50 px-4 py-3">
+              <span className="font-medium text-slate-700">
+                ➗ Acertou só o saldo de gols
+              </span>
+              <span className="badge bg-brand-400 text-white">
+                {settings.pointsGoalDiff} pt
               </span>
             </li>
           </ul>
