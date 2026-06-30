@@ -8,7 +8,7 @@ export type PenaltyWinner = "HOME" | "AWAY";
 
 const PENALTY_WINNER_BONUS = 2;
 const PENALTY_REWARD_BONUS = 2;
-const PENALTY_REWARD_DAY_KEYS = new Set(["2026-06-29", "2026-06-30"]);
+const PENALTY_REWARD_DAY_KEY = "2026-06-29";
 
 export const DEFAULT_RULES: ScoreRules = {
   pointsExact: 5,
@@ -30,8 +30,36 @@ function dayKey(date: Date | string) {
   });
 }
 
-function isYesterdayPenaltyRewardMatch(kickoff?: Date | string | null) {
-  return kickoff ? PENALTY_REWARD_DAY_KEYS.has(dayKey(kickoff)) : false;
+function normalizeTeamName(name?: string | null) {
+  return (name ?? "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase();
+}
+
+function isNetherlandsMoroccoMatch(result: {
+  homeTeam?: string | null;
+  awayTeam?: string | null;
+}) {
+  const home = normalizeTeamName(result.homeTeam);
+  const away = normalizeTeamName(result.awayTeam);
+  return (
+    (home.includes("paises baixos") ||
+      home.includes("holanda") ||
+      home.includes("netherlands")) &&
+    (away.includes("marrocos") || away.includes("morocco"))
+  );
+}
+
+function isYesterdayPenaltyRewardMatch(result: {
+  kickoff?: Date | string | null;
+  homeTeam?: string | null;
+  awayTeam?: string | null;
+}) {
+  if (result.kickoff && dayKey(result.kickoff) === PENALTY_REWARD_DAY_KEY) {
+    return true;
+  }
+  return isNetherlandsMoroccoMatch(result);
 }
 
 function calculateBasePoints(
@@ -69,6 +97,8 @@ function calculatePenaltyBonus(
   result: {
     penaltyWinner?: PenaltyWinner | string | null;
     kickoff?: Date | string | null;
+    homeTeam?: string | null;
+    awayTeam?: string | null;
   }
 ) {
   if (!result.penaltyWinner) return 0;
@@ -77,7 +107,7 @@ function calculatePenaltyBonus(
   if (prediction.penaltyGuess === result.penaltyWinner) {
     bonus += PENALTY_WINNER_BONUS;
   }
-  if (isYesterdayPenaltyRewardMatch(result.kickoff)) {
+  if (isYesterdayPenaltyRewardMatch(result)) {
     bonus += PENALTY_REWARD_BONUS;
   }
   return bonus;
@@ -94,6 +124,8 @@ export function calculatePoints(
     awayScore: number;
     penaltyWinner?: PenaltyWinner | string | null;
     kickoff?: Date | string | null;
+    homeTeam?: string | null;
+    awayTeam?: string | null;
   },
   rules: ScoreRules = DEFAULT_RULES
 ): number {
@@ -114,6 +146,8 @@ export function describePoints(
     awayScore: number;
     penaltyWinner?: PenaltyWinner | string | null;
     kickoff?: Date | string | null;
+    homeTeam?: string | null;
+    awayTeam?: string | null;
   },
   rules: ScoreRules = DEFAULT_RULES
 ): { points: number; reason: string } {
@@ -134,7 +168,7 @@ export function describePoints(
   if (result.penaltyWinner && prediction.penaltyGuess === result.penaltyWinner) {
     reasons.push("+2 vencedor nos penaltis");
   }
-  if (result.penaltyWinner && isYesterdayPenaltyRewardMatch(result.kickoff)) {
+  if (result.penaltyWinner && isYesterdayPenaltyRewardMatch(result)) {
     reasons.push("+2 recompensa penaltis de ontem");
   }
 

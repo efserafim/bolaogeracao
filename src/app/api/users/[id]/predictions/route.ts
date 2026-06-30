@@ -52,6 +52,8 @@ export async function GET(
         awayScore: p.match.awayScore as number,
         penaltyWinner: p.match.penaltyWinner,
         kickoff: p.match.kickoff,
+        homeTeam: p.match.homeTeam,
+        awayTeam: p.match.awayTeam,
       };
       const { points, reason } = describePoints(
         {

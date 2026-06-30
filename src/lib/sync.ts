@@ -213,6 +213,8 @@ export async function rescoreAllFinishedMatches() {
       awayScore: match.awayScore as number,
       penaltyWinner: match.penaltyWinner,
       kickoff: match.kickoff,
+      homeTeam: match.homeTeam,
+      awayTeam: match.awayTeam,
     };
     for (const p of match.predictions) {
       const points = calculatePoints(
