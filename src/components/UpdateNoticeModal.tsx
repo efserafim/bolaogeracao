@@ -51,7 +51,7 @@ export function UpdateNoticeModal() {
         </div>
 
         <p className="mt-4 text-sm leading-6 text-amber-900">
-          A pontuação dos jogos a partir dos 32 avos agora considera apenas o
+          A pontuação dos jogos a partir dos 16 avos agora considera apenas o
           placar até o fim da prorrogação; os gols da disputa de pênaltis não
           entram mais no placar final. Também foi adicionada uma opção para
           escolher quem vence caso o jogo vá para os pênaltis: quem acertar

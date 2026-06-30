@@ -56,7 +56,7 @@ export function initials(name: string) {
 
 const STAGE_LABELS: Record<string, string> = {
   GROUP_STAGE: "Fase de grupos",
-  LAST_32: "32 avos de final",
+  LAST_32: "16 avos de final",
   LAST_16: "Oitavas de final",
   QUARTER_FINALS: "Quartas de final",
   SEMI_FINALS: "Semifinais",
