@@ -5,7 +5,7 @@
   "description": "Bolão da Copa do Mundo - Grupo Jovem da Paróquia",
   "scripts": {
     "dev": "next dev",
-    "build": "prisma generate && next build",
+    "build": "prisma migrate deploy && prisma generate && next build",
     "start": "next start",
     "lint": "next lint",
     "postinstall": "prisma generate",

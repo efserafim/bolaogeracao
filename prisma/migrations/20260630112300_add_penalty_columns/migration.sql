@@ -1,0 +1,2 @@
+ALTER TABLE "Match" ADD COLUMN IF NOT EXISTS "penaltyWinner" TEXT;
+ALTER TABLE "Prediction" ADD COLUMN IF NOT EXISTS "penaltyGuess" TEXT;
